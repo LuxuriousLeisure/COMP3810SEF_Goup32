@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mini_ig')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/COMP3810SEFGroup32')
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error(err));
 
@@ -143,5 +143,6 @@ app.delete('/api/posts/:id', async (req, res) => {
 });
 
 // Start
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8099;
+
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
