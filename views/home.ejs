@@ -1,4 +1,4 @@
-<% layout('layout') -%>
+<%- include('layout') %>
 <div class="feed">
   <% posts.forEach(post => { %>
     <div class="post">
@@ -19,4 +19,6 @@
       <% } %>
     </div>
   <% }) %>
+
 </div>
+</html>
