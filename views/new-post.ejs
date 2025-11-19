@@ -1,0 +1,8 @@
+<% layout('layout') -%>
+<h2>New Post</h2>
+<form action="/post" method="POST" enctype="multipart/form-data">
+  <input type="file" name="image" accept="image/*" required><br><br>
+  <textarea name="caption" placeholder="Write a caption..." rows="3"></textarea><br><br>
+  <button>Post</button>
+</form>
+<a href="/">← Back</a>
