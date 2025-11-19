@@ -1,5 +1,5 @@
 // server.js - Mini Instagram for COMP S381F/3810SEF
-require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
@@ -10,9 +10,9 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/COMP3810SEFGroup32')
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
+mongoose.connect('mongodb+srv://miniig381f:miniig381f123456@cluster0.1z3c5.mongodb.net/mini_ig_381f?retryWrites=true&w=majority&appName=Cluster0')
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.log('MongoDB connect error:', err));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -146,3 +146,4 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 8099;
 
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
+
