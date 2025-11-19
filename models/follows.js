@@ -1,9 +1,30 @@
 var mongoose = require('mongoose');
 
-var userSchema = new mongoose.Schema({
-    userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true}, // Reference to the User model
-    followerId: [{type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true}], // Array of follower User IDs
-    followingId: [{type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true}], // Array of following User IDs
+var followSchema = mongoose.Schema({
+    followerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    followingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }
 });
 
-module.exports = mongoose.model('Follow', userSchema);
+followSchema.index({ followerId: 1, followingId: 1 }, { unique: true });
+followSchema.index({ followingId: 1 });
+
+module.exports = mongoose.model('Follow', followSchema);
+```
+
+---
+
+## 📁 **最终文件结构**
+```
+models/
+├── User.js
+├── Post.js
+├── Comment.js
+└── Follow.js
