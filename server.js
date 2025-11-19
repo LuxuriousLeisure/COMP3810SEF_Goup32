@@ -10,9 +10,13 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // MongoDB
-mongoose.connect('mongodb+srv://miniig381f:miniig381f123456@cluster0.1z3c5.mongodb.net/mini_ig_381f?retryWrites=true&w=majority&appName=Cluster0')
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.log('MongoDB connect error:', err));
+const mongoose = require('mongoose');
+const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+async function main() {
+  await mongoose.connect(uri, { dbName: 'COMP3810SEFGroup32' });
+  console.log('Mongoose Connected!');
+}
+main().catch(err => console.log(err));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -146,4 +150,5 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 8099;
 
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
+
 
