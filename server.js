@@ -23,6 +23,11 @@ app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.set('view engine', 'ejs');
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'mini_ig_secret_2025',
@@ -149,6 +154,7 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 8099;
 
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
+
 
 
 
