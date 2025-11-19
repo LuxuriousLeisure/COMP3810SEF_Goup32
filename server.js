@@ -58,7 +58,7 @@ const requireLogin = (req, res, next) => {
 // =============== WEB ROUTES (need login) ===============
 
 // Register
-app.get('/register', (req, res) => res.render('register'));
+app.get('/register', (req, res) => res.render('register', { user: null }));
 app.post('/register', async (req, res) => {
   const hashed = await bcrypt.hash(req.body.password, 10);
   await User.create({ username: req.body.username, password: hashed });
@@ -66,7 +66,8 @@ app.post('/register', async (req, res) => {
 });
 
 // Login
-app.get('/login', (req, res) => res.render('login'));
+app.get('/login', (req, res) => res.render('login', { user: null }));
+
 app.post('/login', async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
   if (user && await bcrypt.compare(req.body.password, user.password)) {
@@ -86,11 +87,11 @@ app.get('/logout', (req, res) => {
 // Home - feed
 app.get('/', requireLogin, async (req, res) => {
   const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
-  res.render('home', { posts, user: req.session.user });
+  res.render('home', { posts, user: req.session.user || null });
 });
 
 // New post page
-app.get('/post/new', requireLogin, (req, res) => res.render('new-post'));
+app.get('/post/new', requireLogin, (req, res) => res.render('new-post', { user: req.session.user || null }));
 
 // Create post
 app.post('/post', requireLogin, upload.single('image'), async (req, res) => {
@@ -154,6 +155,7 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 8099;
 
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
+
 
 
 
