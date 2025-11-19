@@ -5,7 +5,7 @@ var userSchema = new mongoose.Schema({
     caption: {type: String, required: false}, // Caption for the post
     images: [{type: String, required: false}], // Array of image URLs
     tags: [{type: String, required: false}], // Array of tags
-    lakeCount: {type: Number, default: 0}, // Number of likes
+    likeCount: {type: Number, default: 0}, // Number of likes
 });
 
 module.exports = mongoose.model('Post', userSchema);
