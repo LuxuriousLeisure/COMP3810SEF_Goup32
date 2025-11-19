@@ -10,7 +10,6 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // MongoDB
-const mongoose = require('mongoose');
 const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
 async function main() {
   await mongoose.connect(uri, { dbName: 'COMP3810SEFGroup32' });
@@ -150,5 +149,6 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 8099;
 
 app.listen(PORT, () => console.log(`Mini-IG running on http://localhost:${PORT}`));
+
 
 
