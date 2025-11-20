@@ -1,0 +1,29 @@
+<div class="post-card">
+    <div class="post-header">
+        <img src="<%= post.userId.profileImage %>" class="avatar" alt="avatar">
+        <p class="username"><%= post.userId.username %></p>
+    </div>
+    
+    <% if (post.images && post.images.length > 0) { %>
+        <div class="post-images">
+            <img src="<%= post.images[0] %>" alt="post image" class="post-img">
+        </div>
+    <% } %>
+    
+    <div class="post-content">
+        <p class="text"><%= post.content %></p>
+        
+        <% if (post.tags && post.tags.length > 0) { %>
+            <div class="tags">
+                <% post.tags.forEach((tag) => { %>
+                    <a href="/search?q=%23<%= tag %>" class="tag">#<%= tag %></a>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+    
+    <div class="post-actions">
+        <span class="like-count">❤️ <%= post.likeCount %></span>
+        <a href="/posts/<%= post._id %>" class="view-btn">View Details →</a>
+    </div>
+</div>

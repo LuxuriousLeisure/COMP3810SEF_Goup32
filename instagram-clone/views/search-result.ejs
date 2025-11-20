@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Search</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <%- include('partials/navbar') %>
+        
+        <div class="content">
+            <div class="search-page">
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <form action="/search" method="GET">
+                        <input type="text" name="q" placeholder="Search users or #tags..." value="<%= searchQuery %>">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+                
+                <!-- 搜索结果 -->
+                <div class="search-results">
+                    <% if (searchType === 'user') { %>
+                        <!-- 用户搜索结果 -->
+                        <h2>Users</h2>
+                        <div class="users-grid">
+                            <% if (users.length === 0) { %>
+                                <p>No users found</p>
+                            <% } else { %>
+                                <% users.forEach((u) => { %>
+                                    <%- include('partials/user-card', { user: u }) %>
+                                <% }); %>
+                            <% } %>
+                        </div>
+                    
+                    <% } else if (searchType === 'tag') { %>
+                        <!-- 标签搜索结果 -->
+                        <h2>#<%= searchQuery %></h2>
+                        <div class="posts-grid">
+                            <% if (posts.length === 0) { %>
+                                <p>No posts found with this tag</p>
+                            <% } else { %>
+                                <% posts.forEach((post) => { %>
+                                    <div class="post-thumbnail">
+                                        <img src="<%= post.images[0] %>" alt="post">
+                                        <div class="overlay">
+                                            <p>❤️ <%= post.likeCount %></p>
+                                            <a href="/posts/<%= post._id %>">View</a>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

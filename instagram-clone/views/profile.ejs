@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Profile</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <%- include('partials/navbar') %>
+        
+        <div class="content">
+            <div class="profile-container">
+                <!-- 资料卡片 -->
+                <div class="profile-card">
+                    <img src="<%= user.profileImage %>" class="large-avatar">
+                    <h2><%= user.username %></h2>
+                    
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <p class="number"><%= user.postCount %></p>
+                            <p class="label">posts</p>
+                        </div>
+                        <div class="stat">
+                            <p class="number"><%= user.followingCount %></p>
+                            <p class="label">following</p>
+                        </div>
+                        <div class="stat">
+                            <p class="number"><%= user.followerCount %></p>
+                            <p class="label">followers</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户的帖子网格 -->
+                <div class="user-posts">
+                    <h3>My Posts</h3>
+                    <div class="posts-grid">
+                        <% if (userPosts.length === 0) { %>
+                            <p>No posts yet</p>
+                        <% } else { %>
+                            <% userPosts.forEach((post) => { %>
+                                <div class="post-grid-item">
+                                    <img src="<%= post.images[0] %>" alt="post">
+                                    <div class="overlay">
+                                        <p>❤️ <%= post.likeCount %></p>
+                                        <a href="/posts/<%= post._id %>">View</a>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
