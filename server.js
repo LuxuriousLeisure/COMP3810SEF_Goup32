@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 
-// ===== 1. 数据库连接 =====
+// ===== DB connection =====
 const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
 const dbName = 'COMP3810SEFGroup32';
 
@@ -20,7 +20,7 @@ mongoose.connect(uri, { dbName: dbName })
 
 
 
-// ===== 2. 导入 Models =====
+// ===== import Models =====
 const userSchema = require('./models/user');
 const postSchema = require('./models/post');
 const commentSchema = require('./models/comment');
@@ -32,14 +32,14 @@ const Comment = mongoose.model('Comment', commentSchema);
 const Follow = mongoose.model('Follow', followSchema);
 
 
-// ===== 3. 中间件配置 =====
+// Middleware
 app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session 配置
+// Session config
 app.use(session({
     secret: 'your-secret-key-change-this',
     resave: false,
@@ -50,7 +50,7 @@ app.use(session({
     }
 }));
 
-// ===== 4. 认证中间件 =====
+// middleware Authentication
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         next();
@@ -59,7 +59,7 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// ===== 5. 路由：主页 GET / =====
+// ===== Route:home page GET / =====
 app.get('/', (req, res) => {
     if (req.session.userId) {
         res.redirect('/home');
@@ -68,14 +68,14 @@ app.get('/', (req, res) => {
     }
 });
 
-// ===== 6. 路由：登录页面 GET /login =====
+// ===== route：login page GET /login =====
 app.get('/login', (req, res) => {
     res.render('login', { 
         message: req.query.message || null 
     });
 });
 
-// ===== 7. 路由：注册页面 GET /register =====
+// ===== route:register GET /register =====
 app.get('/register', (req, res) => {
     res.render('register', { 
         message: req.query.message || null 
