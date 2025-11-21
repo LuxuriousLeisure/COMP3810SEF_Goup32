@@ -363,7 +363,7 @@ app.get('/search', isAuthenticated, async (req, res) => {
         const currentUser = await User.findById(req.session.userId);
 
         if (!q) {
-            return res.render('search-results', {
+            return res.render('search-result', {
                 searchType: null,
                 searchQuery: '',
                 users: [],
@@ -373,18 +373,21 @@ app.get('/search', isAuthenticated, async (req, res) => {
             });
         }
 
-        // 检查是否是标签搜索（以#开头）
+        // 檢查是否是標籤搜索（以#開頭）
         const isHashtag = q.startsWith('#');
         const searchQuery = isHashtag ? q.substring(1) : q;
 
         if (isHashtag) {
-            // 标签搜索
-            const posts = await Post.find({ tags: searchQuery })
-                .populate('userId', 'username profileImage');
+            // 標籤模糊搜索
+            const posts = await Post.find({ 
+                tags: { $regex: searchQuery, $options: 'i' } 
+            })
+            .populate('userId', 'username profileImage')
+            .sort({ _id: -1 });
 
-            console.log(`🏷️ 搜索标签: ${searchQuery}`);
-
-            res.render('search-results', {
+            console.log(`🏷️ 搜索標籤: ${searchQuery}，找到 ${posts.length} 個帖子`);
+            
+            res.render('search-result', {
                 searchType: 'tag',
                 searchQuery: searchQuery,
                 users: [],
@@ -392,29 +395,34 @@ app.get('/search', isAuthenticated, async (req, res) => {
                 user: currentUser,
                 message: null
             });
-
         } else {
-            // 用户名搜索
+            // 用戶名模糊搜索
             const users = await User.find({
                 username: { $regex: searchQuery, $options: 'i' }
             });
 
-            console.log(`🔍 搜索用户: ${searchQuery}`);
+            // 同時搜索帖子內容（模糊搜索）
+            const posts = await Post.find({
+                content: { $regex: searchQuery, $options: 'i' }
+            })
+            .populate('userId', 'username profileImage')
+            .sort({ _id: -1 });
 
-            res.render('search-results', {
+            console.log(`🔍 搜索用戶: ${searchQuery}，找到 ${users.length} 個用戶和 ${posts.length} 個帖子`);
+            
+            res.render('search-result', {
                 searchType: 'user',
                 searchQuery: searchQuery,
                 users: users,
-                posts: [],
+                posts: posts,
                 user: currentUser,
                 message: null
             });
         }
-
     } catch (error) {
-        console.error('❌ 搜索错误:', error);
+        console.error('❌ 搜索錯誤:', error);
         res.status(500).render('error', {
-            error: '❌ 搜索失败',
+            error: '❌ 搜索失敗',
             statusCode: 500
         });
     }
