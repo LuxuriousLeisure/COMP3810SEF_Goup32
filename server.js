@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
-require('dotenv').config();
 
 const app = express();
 
@@ -71,8 +70,8 @@ passport.deserializeUser(async (id, done) => {
 
 // Facebook Strategy
 passport.use(new FacebookStrategy({
-    clientID: process.env.FACEBOOK_APP_ID,
-    clientSecret: process.env.FACEBOOK_APP_SECRET,
+    clientID: '1182024900730913',  // 替换为你的 Facebook App ID
+    clientSecret: '●●●●●●●●',  // 替换为你的 Facebook App Secret
     callbackURL: '/auth/facebook/callback',
     profileFields: ['id', 'displayName', 'photos', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
@@ -404,7 +403,7 @@ app.get('/posts/:id', isAuthenticated, async (req, res) => {
         }
 
         // 检查是否为帖子所有者
-        const isOwner = post.userId._id.toString() === (req.session.userId || req.user._id);
+        const isOwner = post.userId._id.toString() === (req.session.userId || req.user._id.toString());
 
         console.log(`📝 用户查看帖子: ${post._id}`);
 
@@ -620,7 +619,7 @@ app.delete('/api/posts/:id', isAuthenticated, async (req, res) => {
         }
 
         // 检查是否为帖子所有者
-        if (post.userId.toString() !== (req.session.userId || req.user._id)) {
+        if (post.userId.toString() !== (req.session.userId || req.user._id.toString())) {
             return res.status(403).json({
                 success: false,
                 message: '❌ 没有权限删除此帖子'
@@ -683,7 +682,7 @@ app.get('/users/:id', isAuthenticated, async (req, res) => {
         }
 
         // 如果是查看自己的資料，重定向到 /profile
-        if (id === (req.session.userId || req.user._id)) {
+        if (id === (req.session.userId || req.user._id.toString())) {
             return res.redirect('/profile');
         }
 
@@ -915,7 +914,7 @@ app.post('/settings/update-username', isAuthenticated, async (req, res) => {
 
         // 檢查用戶名是否已存在
         const existingUser = await User.findOne({ username: newUsername });
-        if (existingUser && existingUser._id.toString() !== (req.session.userId || req.user._id)) {
+        if (existingUser && existingUser._id.toString() !== (req.session.userId || req.user._id.toString())) {
             const currentUser = await User.findById(req.session.userId || req.user._id);
             return res.render('settings', {
                 user: currentUser,
@@ -1138,3 +1137,5 @@ app.listen(PORT, () => {
     console.log(`\n🚀 服务器运行在 http://localhost:${PORT}`);
     console.log(`📍 访问 http://localhost:${PORT}/login 开始使用\n`);
 });
+
+
