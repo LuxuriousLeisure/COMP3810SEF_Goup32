@@ -1,0 +1,25 @@
+<div class="navbar">
+    <div class="navbar-top">
+        <h2>📷 IG Clone</h2>
+    </div>
+    
+    <div class="navbar-buttons">
+        <a href="/search" class="nav-btn">🔍 Search</a>
+        <a href="/home" class="nav-btn">📸 Find</a>
+        <a href="/publish" class="nav-btn">➕ Publish</a>
+        <a href="/profile" class="nav-btn">👤 Profile</a>
+    </div>
+    
+    <div class="navbar-bottom">
+        <% if (user) { %>
+            <div class="user-info">
+                <img src="<%= user.profileImage %>" class="small-avatar" alt="avatar">
+                <p><%= user.username %></p>
+            </div>
+        <% } %>
+        
+        <form action="/logout" method="POST" style="width:100%;">
+            <button type="submit" class="logout-btn">🚪 Logout</button>
+        </form>
+    </div>
+</div>

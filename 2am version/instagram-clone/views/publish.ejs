@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Publish</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <%- include('partials/navbar') %>
+        
+        <div class="content">
+            <div class="publish-container">
+                <h1>📝 Create New Post</h1>
+                
+                <form id="publish-form" onsubmit="handlePublish(event)">
+                    <!-- 图片 URL 输入 -->
+                    <div class="url-input-section">
+                        <label>Image URLs (HTTPS, one per line)</label>
+                        <textarea name="imageUrls" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" required></textarea>
+                    </div>
+                    
+                    <!-- 内容输入 -->
+                    <div class="content-section">
+                        <label>Content</label>
+                        <textarea name="content" placeholder="Write something..." maxlength="2000" required></textarea>
+                    </div>
+                    
+                    <!-- 标签输入 -->
+                    <div class="tags-section">
+                        <label>Tags (separated by space)</label>
+                        <input type="text" name="tags" placeholder="travel food fashion">
+                    </div>
+                    
+                    <!-- 发布按钮 -->
+                    <button type="submit" class="btn-primary">Publish</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function handlePublish(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('publish-form'));
+            
+            const data = {
+                imageUrls: formData.get('imageUrls'),
+                content: formData.get('content'),
+                tags: formData.get('tags')
+            };
+            
+            fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Post published successfully!');
+                    window.location.href = '/home';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+    </script>
+</body>
+</html>
