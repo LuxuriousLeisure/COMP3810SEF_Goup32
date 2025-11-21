@@ -18,9 +18,7 @@ mongoose.connect(uri, { dbName: dbName })
         console.error('Error connecting to MongoDB:', err);
     });
 
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('✅ MongoDB 连接成功！'))
-    .catch(err => console.error('❌ MongoDB 连接失败:', err));
+
 
 // ===== 2. 导入 Models =====
 const userSchema = require('./models/user');
