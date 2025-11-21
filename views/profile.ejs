@@ -4,37 +4,312 @@
     <title>Instagram Clone - Profile</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .settings-buttons {
+        /* ===== Profile Container ===== */
+        .profile-container {
+            max-width: 935px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* ===== Profile Card ===== */
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* ===== Profile Image Container ===== */
+        .profile-image-wrapper {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            position: relative;
+            /* ✅ 不使用負的 z-index */
+            z-index: 1;
+        }
+
+        .large-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* ===== 圖片加載錯誤處理 ===== */
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
+            align-items: center;
             justify-content: center;
-        }
-
-        .settings-btn {
-            padding: 10px 20px;
-            background-color: #3897f0;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
+            font-size: 56px;
             font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .settings-btn:hover {
-            background-color: #2b7ac4;
+        /* ===== Profile Info ===== */
+        .profile-card h2 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #262626;
+            font-weight: 600;
+        }
+
+        /* ===== Profile Stats ===== */
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            padding: 20px 0;
+            border-top: 1px solid #dbdbdb;
+            border-bottom: 1px solid #dbdbdb;
+            /* ✅ 確保統計數據可點擊 */
+            position: relative;
+            z-index: 5;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px 15px;
+            transition: all 0.2s;
+            border-radius: 8px;
         }
 
         .stat.clickable {
             cursor: pointer;
         }
 
+        .stat.clickable:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .stat .number {
+            font-size: 22px;
+            font-weight: bold;
+            color: #262626;
+            margin: 0 0 5px 0;
+            transition: color 0.2s;
+        }
+
         .stat.clickable:hover .number {
-            color: #3897f0;
+            color: #0095f6;
+        }
+
+        .stat .label {
+            font-size: 14px;
+            color: #8e8e8e;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== Settings Buttons ===== */
+        .settings-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+            /* ✅ 確保按鈕在最上層且可點擊 */
+            position: relative;
+            z-index: 10;
+        }
+
+        .settings-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .settings-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .settings-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ===== User Posts Section ===== */
+        .user-posts {
+            margin-top: 40px;
+        }
+
+        .user-posts h3 {
+            font-size: 20px;
+            color: #262626;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== Posts Grid ===== */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .post-grid-item {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* 1:1 正方形 */
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .post-grid-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .post-grid-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-grid-item .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .post-grid-item:hover .overlay {
+            opacity: 1;
+        }
+
+        .overlay p {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .overlay a {
+            padding: 10px 24px;
+            background: white;
+            color: #262626;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .overlay a:hover {
+            background: #0095f6;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ===== Empty State ===== */
+        .user-posts p {
+            text-align: center;
+            color: #8e8e8e;
+            font-size: 16px;
+            padding: 60px 20px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+
+        /* ===== 響應式設計 ===== */
+        @media (max-width: 768px) {
+            .profile-card {
+                padding: 30px 20px;
+            }
+
+            .profile-image-wrapper {
+                width: 120px;
+                height: 120px;
+            }
+
+            .avatar-placeholder {
+                font-size: 44px;
+            }
+
+            .profile-card h2 {
+                font-size: 24px;
+            }
+
+            .profile-stats {
+                gap: 20px;
+            }
+
+            .stat .number {
+                font-size: 18px;
+            }
+
+            .stat .label {
+                font-size: 12px;
+            }
+
+            .settings-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .settings-btn {
+                justify-content: center;
+            }
+
+            .posts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-stats {
+                gap: 15px;
+            }
+
+            .posts-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -44,45 +319,66 @@
         
         <div class="content">
             <div class="profile-container">
-                <!-- 资料卡片 -->
+                <!-- 資料卡片 -->
                 <div class="profile-card">
-                    <img src="<%= user.profileImage %>" class="large-avatar">
+                    <!-- ✅ 頭像容器 -->
+                    <div class="profile-image-wrapper">
+                        <img src="<%= user.profileImage || '/images/default-avatar.jpg' %>" 
+                             alt="<%= user.username %>" 
+                             class="large-avatar"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-placeholder" style="display: none;">
+                            <%= user.username.charAt(0).toUpperCase() %>
+                        </div>
+                    </div>
+
                     <h2><%= user.username %></h2>
                     
+                    <!-- 統計數據 -->
                     <div class="profile-stats">
                         <div class="stat">
-                            <p class="number"><%= user.postCount %></p>
-                            <p class="label">posts</p>
+                            <p class="number"><%= user.postCount || 0 %></p>
+                            <p class="label">帖子</p>
                         </div>
                         <div class="stat clickable" onclick="location.href='/following'">
-                            <p class="number"><%= user.followingCount %></p>
-                            <p class="label">following</p>
+                            <p class="number"><%= user.followingCount || 0 %></p>
+                            <p class="label">關注中</p>
                         </div>
                         <div class="stat clickable" onclick="location.href='/followers'">
-                            <p class="number"><%= user.followerCount %></p>
-                            <p class="label">followers</p>
+                            <p class="number"><%= user.followerCount || 0 %></p>
+                            <p class="label">粉絲</p>
                         </div>
                     </div>
 
                     <!-- 設置按鈕 -->
                     <div class="settings-buttons">
-                        <a href="/settings" class="settings-btn">⚙️ 帳戶設置</a>
+                        <a href="/publish" class="settings-btn">
+                            ➕ 發布新帖子
+                        </a>
+                        <a href="/settings" class="settings-btn">
+                            ⚙️ 帳戶設置
+                        </a>
                     </div>
                 </div>
                 
-                <!-- 用户的帖子网格 -->
+                <!-- 用戶的帖子網格 -->
                 <div class="user-posts">
-                    <h3>My Posts</h3>
+                    <h3>📸 我的帖子</h3>
                     <div class="posts-grid">
-                        <% if (userPosts.length === 0) { %>
-                            <p>No posts yet</p>
+                        <% if (!userPosts || userPosts.length === 0) { %>
+                            <p style="grid-column: 1 / -1;">
+                                還沒有發布任何帖子<br>
+                                <a href="/publish" style="color: #0095f6; text-decoration: none; font-weight: 600;">立即發布第一篇 →</a>
+                            </p>
                         <% } else { %>
                             <% userPosts.forEach((post) => { %>
-                                <div class="post-grid-item">
-                                    <img src="<%= post.images[0] %>" alt="post">
+                                <div class="post-grid-item" onclick="location.href='/posts/<%= post._id %>'">
+                                    <img src="<%= post.images[0] %>" 
+                                         alt="post"
+                                         onerror="this.src='/images/placeholder.jpg'">
                                     <div class="overlay">
-                                        <p>❤️ <%= post.likeCount %></p>
-                                        <a href="/posts/<%= post._id %>">View</a>
+                                        <p>❤️ <%= post.likeCount || 0 %></p>
+                                        <a href="/posts/<%= post._id %>" onclick="event.stopPropagation()">查看詳情</a>
                                     </div>
                                 </div>
                             <% }); %>
@@ -92,6 +388,28 @@
             </div>
         </div>
     </div>
+
+    <!-- ✅ 圖片加載錯誤處理 JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 處理頭像加載錯誤
+            const avatar = document.querySelector('.large-avatar');
+            if (avatar && !avatar.complete) {
+                avatar.addEventListener('load', function() {
+                    console.log('✅ 頭像加載成功');
+                });
+            }
+
+            // 處理帖子圖片加載錯誤
+            const postImages = document.querySelectorAll('.post-grid-item img');
+            postImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    console.warn('⚠️ 圖片加載失敗:', this.src);
+                    this.src = '/images/placeholder.jpg';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
 
