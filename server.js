@@ -69,32 +69,42 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Facebook Strategy
+// Facebook Strategy
 passport.use(new FacebookStrategy({
-    clientID: '1182024900730913',  // 替换为你的 Facebook App ID
-    clientSecret: '●●●●●●●●',  // 替换为你的 Facebook App Secret
-    callbackURL: '/auth/facebook/callback',
+    clientID: '794297030253158', // 建议用环境变量，不要硬编码
+    clientSecret: 'd89c18c71493039475e5c476f989e3e3', // 建议用环境变量
+    callbackURL: 'http://localhost:3000/auth/facebook/callback',
     profileFields: ['id', 'displayName', 'photos', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        // Check if user exists
+        // 【修正】通过 facebookId 查找用户（之前因字段嵌套，这里永远查不到）
         let user = await User.findOne({ facebookId: profile.id });
 
         if (user) {
             return done(null, user);
         }
 
-        // Create new user
+        // 【关键】格式化 Facebook 昵称：替换所有空格为下划线，避免 username 正则验证失败
+        let formattedUsername = profile.displayName 
+            ? profile.displayName.replace(/\s+/g, '_') // 空格替换为下划线
+            : `fb_user_${profile.id}`;
+        
+        // 【可选优化】避免用户名重复：追加 Facebook ID 后4位
+        formattedUsername = `${formattedUsername}_${profile.id.slice(-4)}`;
+
+        // 创建新用户
         user = await User.create({
-            facebookId: profile.id,
-            username: profile.displayName || `fb_user_${profile.id}`,
-            profileImage: profile.photos[0].value || '/images/default-avatar.jpg',
-            followerCount: 0,
-            followingCount: 0,
-            postCount: 0
+            facebookId: profile.id, // 现在能正确存储到顶级字段
+            username: formattedUsername, // 使用格式化后的用户名
+            // 【修正】可选链操作，避免 photos 数组为空时的报错
+            profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg',
+            // 无需传 password，因为 facebookId 存在时，password 非必填
+            // followerCount 等字段有默认值，可省略
         });
 
         return done(null, user);
     } catch (err) {
+        console.error('Facebook 登录创建用户失败：', err);
         return done(err);
     }
 }));
