@@ -8,7 +8,8 @@ var userSchema = mongoose.Schema({
         trim: true,
         minlength: 3,  // 從 4 改為 3，讓用戶名更靈活
         maxlength: 20, // 從 16 改為 20，允許更長的用戶名
-        match: /^[a-zA-Z0-9_]+$/
+        match: /^[a-zA-Z0-9_]+$/，
+        facebookId: { type: String, unique: true }
     },
     password: {
         type: String,
