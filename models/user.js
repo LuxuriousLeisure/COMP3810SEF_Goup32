@@ -6,15 +6,24 @@ var userSchema = mongoose.Schema({
         required: true,
         unique: true,
         trim: true,
-        minlength: 3,  // 從 4 改為 3，讓用戶名更靈活
-        maxlength: 20, // 從 16 改為 20，允許更長的用戶名
-        match: /^[a-zA-Z0-9_]+$/,
-        facebookId: { type: String, unique: true }
+        minlength: 3,
+        maxlength: 20,
+        match: /^[a-zA-Z0-9_]+$/, // 保留原正则，后续在代码中处理昵称空格
+        // 【关键修正1】删除嵌套在这里的 facebookId 字段
+    },
+    // 【关键修正1】将 facebookId 移到顶级字段，作为独立属性
+    facebookId: { 
+        type: String, 
+        unique: true,
+        sparse: true // 关键：添加 sparse 索引，允许 facebookId 为 null（本地登录用户无该字段）
     },
     password: {
         type: String,
-        required: true,
-        minlength: 6  // 添加最小密碼長度限制
+        // 【关键修正2】条件必填：只有当 facebookId 不存在时，password 才必填
+        required: function() {
+            return !this.facebookId; 
+        },
+        minlength: 6
     },
     profileImage: {
         type: String,
@@ -36,7 +45,7 @@ var userSchema = mongoose.Schema({
         min: 0
     }
 }, {
-    timestamps: true  // 自動添加 createdAt 和 updatedAt
+    timestamps: true
 });
 
 // 索引優化
@@ -51,4 +60,3 @@ userSchema.virtual('formattedDate').get(function() {
 });
 
 module.exports = userSchema;
-
