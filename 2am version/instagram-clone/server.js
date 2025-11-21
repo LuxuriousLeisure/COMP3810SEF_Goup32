@@ -8,7 +8,7 @@ const app = express();
 
 // ===== 1. 数据库连接 =====
 const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
-const dbName = 'COMP3810SEFGoup32';
+const dbName = 'COMP3810SEFGroup32';
 
 mongoose.connect(uri, { dbName: dbName })
     .then(() => {
