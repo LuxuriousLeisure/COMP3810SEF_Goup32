@@ -7,7 +7,16 @@ require('dotenv').config();
 const app = express();
 
 // ===== 1. 数据库连接 =====
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/instagram_clone';
+const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+const dbName = 'COMP3810SEFGoup32';
+
+mongoose.connect(uri, { dbName: dbName })
+    .then(() => {
+        console.log('Connected to MongoDB');
+    })
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+    });
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ MongoDB 连接成功！'))
