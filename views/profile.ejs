@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Profile</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .settings-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .settings-btn {
+            padding: 10px 20px;
+            background-color: #3897f0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .settings-btn:hover {
+            background-color: #2b7ac4;
+        }
+
+        .stat.clickable {
+            cursor: pointer;
+        }
+
+        .stat.clickable:hover .number {
+            color: #3897f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <%- include('partials/navbar') %>
+        
+        <div class="content">
+            <div class="profile-container">
+                <!-- 资料卡片 -->
+                <div class="profile-card">
+                    <img src="<%= user.profileImage %>" class="large-avatar">
+                    <h2><%= user.username %></h2>
+                    
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <p class="number"><%= user.postCount %></p>
+                            <p class="label">posts</p>
+                        </div>
+                        <div class="stat clickable" onclick="location.href='/following'">
+                            <p class="number"><%= user.followingCount %></p>
+                            <p class="label">following</p>
+                        </div>
+                        <div class="stat clickable" onclick="location.href='/followers'">
+                            <p class="number"><%= user.followerCount %></p>
+                            <p class="label">followers</p>
+                        </div>
+                    </div>
+
+                    <!-- 設置按鈕 -->
+                    <div class="settings-buttons">
+                        <a href="/settings" class="settings-btn">⚙️ 帳戶設置</a>
+                    </div>
+                </div>
+                
+                <!-- 用户的帖子网格 -->
+                <div class="user-posts">
+                    <h3>My Posts</h3>
+                    <div class="posts-grid">
+                        <% if (userPosts.length === 0) { %>
+                            <p>No posts yet</p>
+                        <% } else { %>
+                            <% userPosts.forEach((post) => { %>
+                                <div class="post-grid-item">
+                                    <img src="<%= post.images[0] %>" alt="post">
+                                    <div class="overlay">
+                                        <p>❤️ <%= post.likeCount %></p>
+                                        <a href="/posts/<%= post._id %>">View</a>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
