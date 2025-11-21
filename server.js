@@ -71,8 +71,8 @@ passport.deserializeUser(async (id, done) => {
 // Facebook Strategy
 // Facebook Strategy
 passport.use(new FacebookStrategy({
-    clientID: '794297030253158', // 建议用环境变量，不要硬编码
-    clientSecret: 'd89c18c71493039475e5c476f989e3e3', // 建议用环境变量
+    clientID: '         ', // 建议用环境变量，不要硬编码
+    clientSecret: '             ', // 建议用环境变量
     callbackURL: 'http://localhost:3000/auth/facebook/callback',
     profileFields: ['id', 'displayName', 'photos', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
