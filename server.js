@@ -2,6 +2,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const passport = require('passport');
+const FacebookStrategy = require('passport-facebook').Strategy;
 require('dotenv').config();
 
 const app = express();
@@ -50,9 +52,57 @@ app.use(session({
     }
 }));
 
+// Passport config
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
+});
+
+// Facebook Strategy
+passport.use(new FacebookStrategy({
+    clientID: process.env.FACEBOOK_APP_ID,
+    clientSecret: process.env.FACEBOOK_APP_SECRET,
+    callbackURL: '/auth/facebook/callback',
+    profileFields: ['id', 'displayName', 'photos', 'email']
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        // Check if user exists
+        let user = await User.findOne({ facebookId: profile.id });
+
+        if (user) {
+            return done(null, user);
+        }
+
+        // Create new user
+        user = await User.create({
+            facebookId: profile.id,
+            username: profile.displayName || `fb_user_${profile.id}`,
+            profileImage: profile.photos[0].value || '/images/default-avatar.jpg',
+            followerCount: 0,
+            followingCount: 0,
+            postCount: 0
+        });
+
+        return done(null, user);
+    } catch (err) {
+        return done(err);
+    }
+}));
+
 // middleware Authentication
 function isAuthenticated(req, res, next) {
-    if (req.session.userId) {
+    if (req.session.userId || req.isAuthenticated()) {
         next();
     } else {
         res.redirect('/login');
@@ -61,7 +111,7 @@ function isAuthenticated(req, res, next) {
 
 // ===== Route:home page GET / =====
 app.get('/', (req, res) => {
-    if (req.session.userId) {
+    if (req.session.userId || req.isAuthenticated()) {
         res.redirect('/home');
     } else {
         res.redirect('/login');
@@ -81,6 +131,21 @@ app.get('/register', (req, res) => {
         message: req.query.message || null 
     });
 });
+
+// ===== Facebook Auth Routes =====
+app.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/login' }),
+    (req, res) => {
+        // Successful authentication
+        req.session.userId = req.user._id.toString();
+        req.session.username = req.user.username;
+        req.session.profileImage = req.user.profileImage;
+        console.log(`✅ Facebook 用户登录成功: ${req.user.username}`);
+        res.redirect('/home');
+    }
+);
 
 // ===== 8. 路由：用户登录 POST /api/users/login =====
 app.post('/api/users/login', async (req, res) => {
@@ -197,7 +262,7 @@ app.get('/home', isAuthenticated, async (req, res) => {
         const validPosts = posts.filter(post => post.userId !== null);
 
         // 获取当前用户信息
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         
         // Null 检查
         if (!currentUser) {
@@ -227,7 +292,7 @@ app.get('/home', isAuthenticated, async (req, res) => {
 // ===== 11. 路由：发布页面 GET /publish =====
 app.get('/publish', isAuthenticated, async (req, res) => {
     try {
-        const user = await User.findById(req.session.userId);
+        const user = await User.findById(req.session.userId || req.user._id);
         // ✅ Null 检查
         if (!user) {
             console.log('⚠️ 用户不存在，清除 session');
@@ -278,7 +343,7 @@ app.post('/api/posts', isAuthenticated, async (req, res) => {
 
         // 创建新帖子
         const newPost = await Post.create({
-            userId: req.session.userId,
+            userId: req.session.userId || req.user._id,
             images: images,
             content: content,
             tags: tagArray,
@@ -286,7 +351,7 @@ app.post('/api/posts', isAuthenticated, async (req, res) => {
         });
 
         // 更新用户的 postCount
-        await User.findByIdAndUpdate(req.session.userId, {
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
             $inc: { postCount: 1 }
         });
 
@@ -329,7 +394,7 @@ app.get('/posts/:id', isAuthenticated, async (req, res) => {
             .populate('userId', 'username profileImage');
 
         // 获取当前用户信息
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
 
 	// ✅ Null 检查
         if (!currentUser) {
@@ -339,7 +404,7 @@ app.get('/posts/:id', isAuthenticated, async (req, res) => {
         }
 
         // 检查是否为帖子所有者
-        const isOwner = post.userId._id.toString() === req.session.userId;
+        const isOwner = post.userId._id.toString() === (req.session.userId || req.user._id);
 
         console.log(`📝 用户查看帖子: ${post._id}`);
 
@@ -363,7 +428,7 @@ app.get('/posts/:id', isAuthenticated, async (req, res) => {
 // ===== 14. 路由：个人资料页 GET /profile =====
 app.get('/profile', isAuthenticated, async (req, res) => {
     try {
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
 
 	// ✅ Null 检查
         if (!currentUser) {
@@ -373,7 +438,7 @@ app.get('/profile', isAuthenticated, async (req, res) => {
         }
 
         // 获取用户的帖子
-        const userPosts = await Post.find({ userId: req.session.userId });
+        const userPosts = await Post.find({ userId: req.session.userId || req.user._id });
 
         console.log(`👤 用户查看个人资料: ${currentUser.username}`);
 
@@ -396,7 +461,7 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 app.get('/search', isAuthenticated, async (req, res) => {
     try {
         const { q } = req.query;
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
 
 	 // ✅ Null 检查
         if (!currentUser) {
@@ -487,7 +552,7 @@ app.post('/api/posts/:id/comments', isAuthenticated, async (req, res) => {
         // 创建评论
         const newComment = await Comment.create({
             postId: id,
-            userId: req.session.userId,
+            userId: req.session.userId || req.user._id,
             content: content.trim()
         });
 
@@ -555,7 +620,7 @@ app.delete('/api/posts/:id', isAuthenticated, async (req, res) => {
         }
 
         // 检查是否为帖子所有者
-        if (post.userId.toString() !== req.session.userId) {
+        if (post.userId.toString() !== (req.session.userId || req.user._id)) {
             return res.status(403).json({
                 success: false,
                 message: '❌ 没有权限删除此帖子'
@@ -569,7 +634,7 @@ app.delete('/api/posts/:id', isAuthenticated, async (req, res) => {
         await Comment.deleteMany({ postId: id });
 
         // 更新用户的 postCount
-        await User.findByIdAndUpdate(req.session.userId, {
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
             $inc: { postCount: -1 }
         });
 
@@ -608,7 +673,7 @@ app.post('/logout', (req, res) => {
 app.get('/users/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
 
         // Null 檢查
         if (!currentUser) {
@@ -618,7 +683,7 @@ app.get('/users/:id', isAuthenticated, async (req, res) => {
         }
 
         // 如果是查看自己的資料，重定向到 /profile
-        if (id === req.session.userId) {
+        if (id === (req.session.userId || req.user._id)) {
             return res.redirect('/profile');
         }
 
@@ -636,7 +701,7 @@ app.get('/users/:id', isAuthenticated, async (req, res) => {
 
         // 檢查當前用戶是否已關注該用戶
         const followRelation = await Follow.findOne({
-            follower: req.session.userId,
+            follower: req.session.userId || req.user._id,
             followee: id
         });
         const isFollowing = !!followRelation;
@@ -663,7 +728,7 @@ app.get('/users/:id', isAuthenticated, async (req, res) => {
 app.post('/api/users/:id/follow', isAuthenticated, async (req, res) => {
     try {
         const followeeId = req.params.id;
-        const followerId = req.session.userId;
+        const followerId = req.session.userId || req.user._id;
 
         console.log(`🔍 關注請求 - Follower: ${followerId}, Followee: ${followeeId}`);
 
@@ -751,7 +816,7 @@ app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
 
         // 刪除關注關係
         const result = await Follow.findOneAndDelete({
-            follower: req.session.userId,
+            follower: req.session.userId || req.user._id,
             followee: followeeId
         });
 
@@ -763,7 +828,7 @@ app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
         }
 
         // 更新計數
-        await User.findByIdAndUpdate(req.session.userId, { $inc: { followingCount: -1 } });
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
         await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: -1 } });
 
         console.log(`✅ 取消關注成功`);
@@ -784,7 +849,7 @@ app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
 // ===== 22. 路由：設置頁面 GET /settings =====
 app.get('/settings', isAuthenticated, async (req, res) => {
     try {
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         console.log(`⚙️ 用戶 ${currentUser.username} 查看設置頁面`);
         
         res.render('settings', {
@@ -806,28 +871,28 @@ app.post('/settings/update-avatar', isAuthenticated, async (req, res) => {
         const { avatarUrl } = req.body;
         
         if (!avatarUrl || avatarUrl.trim() === '') {
-            const currentUser = await User.findById(req.session.userId);
+            const currentUser = await User.findById(req.session.userId || req.user._id);
             return res.render('settings', {
                 user: currentUser,
                 message: { type: 'error', text: '❌ 請提供頭像網址' }
             });
         }
 
-        await User.findByIdAndUpdate(req.session.userId, {
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
             profileImage: avatarUrl
         });
 
         req.session.profileImage = avatarUrl;
         console.log(`✅ 用戶更新了頭像`);
         
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         res.render('settings', {
             user: currentUser,
             message: { type: 'success', text: '✅ 頭像更新成功！' }
         });
     } catch (error) {
         console.error('❌ 更新頭像錯誤:', error);
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         res.render('settings', {
             user: currentUser,
             message: { type: 'error', text: '❌ 更新失敗，請重試' }
@@ -841,7 +906,7 @@ app.post('/settings/update-username', isAuthenticated, async (req, res) => {
         const { newUsername } = req.body;
         
         if (!newUsername || newUsername.trim().length < 3) {
-            const currentUser = await User.findById(req.session.userId);
+            const currentUser = await User.findById(req.session.userId || req.user._id);
             return res.render('settings', {
                 user: currentUser,
                 message: { type: 'error', text: '❌ 用戶名至少需要 3 個字符' }
@@ -850,29 +915,29 @@ app.post('/settings/update-username', isAuthenticated, async (req, res) => {
 
         // 檢查用戶名是否已存在
         const existingUser = await User.findOne({ username: newUsername });
-        if (existingUser && existingUser._id.toString() !== req.session.userId) {
-            const currentUser = await User.findById(req.session.userId);
+        if (existingUser && existingUser._id.toString() !== (req.session.userId || req.user._id)) {
+            const currentUser = await User.findById(req.session.userId || req.user._id);
             return res.render('settings', {
                 user: currentUser,
                 message: { type: 'error', text: '❌ 用戶名已被使用' }
             });
         }
 
-        await User.findByIdAndUpdate(req.session.userId, {
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
             username: newUsername
         });
 
         req.session.username = newUsername;
         console.log(`✅ 用戶名更新為: ${newUsername}`);
         
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         res.render('settings', {
             user: currentUser,
             message: { type: 'success', text: '✅ 用戶名更新成功！' }
         });
     } catch (error) {
         console.error('❌ 更新用戶名錯誤:', error);
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         res.render('settings', {
             user: currentUser,
             message: { type: 'error', text: '❌ 更新失敗，請重試' }
@@ -884,7 +949,7 @@ app.post('/settings/update-username', isAuthenticated, async (req, res) => {
 app.post('/settings/update-password', isAuthenticated, async (req, res) => {
     try {
         const { currentPassword, newPassword, confirmPassword } = req.body;
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         
         // 驗證輸入
         if (!currentPassword || !newPassword || !confirmPassword) {
@@ -929,7 +994,7 @@ app.post('/settings/update-password', isAuthenticated, async (req, res) => {
         });
     } catch (error) {
         console.error('❌ 更新密碼錯誤:', error);
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         res.render('settings', {
             user: currentUser,
             message: { type: 'error', text: '❌ 更新失敗，請重試' }
@@ -940,7 +1005,7 @@ app.post('/settings/update-password', isAuthenticated, async (req, res) => {
 // ===== 26. 路由：Following List GET /following =====
 app.get('/following', isAuthenticated, async (req, res) => {
     try {
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         
         if (!currentUser) {
             console.log('⚠️ 用戶不存在，清除 session');
@@ -949,7 +1014,7 @@ app.get('/following', isAuthenticated, async (req, res) => {
         }
         
         // 查詢當前用戶關注的人（follower = 當前用戶）
-        const follows = await Follow.find({ follower: req.session.userId })
+        const follows = await Follow.find({ follower: req.session.userId || req.user._id })
             .populate('followee', 'username profileImage');
         
         const followingList = follows.map(f => ({
@@ -976,7 +1041,7 @@ app.get('/following', isAuthenticated, async (req, res) => {
 // ===== 27. 路由：Followers List GET /followers =====
 app.get('/followers', isAuthenticated, async (req, res) => {
     try {
-        const currentUser = await User.findById(req.session.userId);
+        const currentUser = await User.findById(req.session.userId || req.user._id);
         
         if (!currentUser) {
             console.log('⚠️ 用戶不存在，清除 session');
@@ -985,7 +1050,7 @@ app.get('/followers', isAuthenticated, async (req, res) => {
         }
         
         // 查詢關注當前用戶的人（followee = 當前用戶）
-        const follows = await Follow.find({ followee: req.session.userId })
+        const follows = await Follow.find({ followee: req.session.userId || req.user._id })
             .populate('follower', 'username profileImage');
         
         const followersList = follows.map(f => ({
@@ -1017,11 +1082,11 @@ app.post('/following/:id/unfollow', isAuthenticated, async (req, res) => {
         const followeeId = req.params.id;
         
         await Follow.findOneAndDelete({
-            follower: req.session.userId,
+            follower: req.session.userId || req.user._id,
             followee: followeeId
         });
 
-        await User.findByIdAndUpdate(req.session.userId, { $inc: { followingCount: -1 } });
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
         await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: -1 } });
 
         console.log(`✅ 從 Following List 取消關注成功`);
@@ -1043,11 +1108,11 @@ app.post('/followers/:id/remove', isAuthenticated, async (req, res) => {
         
         await Follow.findOneAndDelete({
             follower: followerId,
-            followee: req.session.userId
+            followee: req.session.userId || req.user._id
         });
 
         await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } });
-        await User.findByIdAndUpdate(req.session.userId, { $inc: { followerCount: -1 } });
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followerCount: -1 } });
 
         console.log(`✅ 移除粉絲成功`);
         res.redirect('/followers');
@@ -1073,5 +1138,3 @@ app.listen(PORT, () => {
     console.log(`\n🚀 服务器运行在 http://localhost:${PORT}`);
     console.log(`📍 访问 http://localhost:${PORT}/login 开始使用\n`);
 });
-
-
