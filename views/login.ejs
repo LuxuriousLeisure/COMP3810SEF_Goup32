@@ -1,174 +1,60 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登入 - COMP3810SEF 社交平台</title>
-    <link rel="stylesheet" href="/css/style.css"> <!-- 你原来的样式表 -->
+    <title>Instagram Clone - Login</title>
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            background: white;
-            padding: 40px 50px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        .github-login {
+            display: block;
             width: 100%;
-            max-width: 420px;
-            text-align: center;
-        }
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            background: #667eea;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 36px;
-            font-weight: bold;
-        }
-        h1 {
-            margin: 0 0 30px;
-            color: #333;
-            font-size: 28px;
-        }
-        .message {
             padding: 12px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        .error { background: #ffe6e6; color: #d63031; border: 1px solid #fd79a8; }
-        .success { background: #e6f9e6; color: #00b894; border: 1px solid #55efc4; }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 14px 16px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: all 0.3s;
-        }
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            margin: 15px 0;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-local {
-            background: #667eea;
+            margin: 20px 0;
+            background: #333;
             color: white;
-        }
-        .btn-local:hover { background: #5a6fd8; }
-
-        .divider {
-            margin: 30px 0;
-            position: relative;
-            color: #aaa;
-            font-size: 14px;
-        }
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #ddd;
-        }
-        .divider span {
-            background: white;
-            padding: 0 15px;
-        }
-
-        .google-btn {
-            display: inline-block;
-            background: white;
-            color: #444;
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
             font-weight: bold;
-            text-decoration: none;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s;
+            font-size: 16px;
         }
-        .google-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
-        }
-        .google-btn img {
-            width: 20px;
-            height: 20px;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-
-        .footer-text {
-            margin-top: 25px;
-            color: #888;
-            font-size: 14px;
-        }
-        .footer-text a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        .footer-text a:hover { text-decoration: underline; }
+        .github-login:hover { background: #222; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">S</div>
-        <h1>欢迎回来</h1>
+        <div class="login-box">
+            <h1>Instagram Clone</h1>
+            
+            <% if (message) { %>
+                <div class="alert"><%= message %></div>
+            <% } %>
 
-        <% if (message) { %>
-            <div class="message <%= message.includes('成功') ? 'success' : 'error' %>">
-                <%= message %>
-            </div>
-        <% } %>
+            <!-- 新增 GitHub 一键登录按钮（放在最上面最显眼） -->
+            <a href="/auth/github" class="github-login">
+                GitHub 账号登录
+            </a>
 
-        <!-- 本地登录表单 -->
-        <form action="/api/users/login" method="POST">
-            <input type="text" name="username" placeholder="用户名" required autofocus>
-            <input type="password" name="password" placeholder="密码" required>
-            <button type="submit" class="btn-local">使用账号密码登入</button>
-        </form>
-
-        <div class="divider"><span>或</span></div>
-
-        <!-- Google 一键登录 -->
-        <a href="/auth/google" class="google-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-            使用 Google 账号登入
-        </a>
-
-        <div class="footer-text">
-            还没有账号？<a href="/register">立即注册</a>
+            <div style="text-align:center; margin:15px 0; color:#888;">─── 或 ───</div>
+            
+            <!-- 保留你原来的本地登录表单 -->
+            <form action="/api/users/login" method="POST">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+            
+            <p class="auth-link">
+                Don't have an account? <a href="/register">Sign up here</a>
+            </p>
         </div>
     </div>
 </body>
 </html>
-
-
