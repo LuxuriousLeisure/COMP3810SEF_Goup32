@@ -1,5 +1,4 @@
 require('dotenv').config();
-const GitHubStrategy = require('passport-github2').Strategy;
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
