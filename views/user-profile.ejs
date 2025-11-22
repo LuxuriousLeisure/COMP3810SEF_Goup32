@@ -88,19 +88,17 @@
                     <div class="stat-item"><%= user.followingCount || 0 %> following</div>
                 </div>
                 
-                <!-- 关注/取消关注按钮 -->
-                <% if (currentUser && currentUser._id.toString() !== user._id.toString()) { %>
-                    <div id="message" class=""></div>
-                    <button 
-                        id="followBtn" 
-                        class="follow-btn <%= isFollowing ? 'unfollow' : 'follow' %>"
-                        data-followee-id="<%= user._id %>"
-                    >
-                        <%= isFollowing ? 'Unfollow' : 'Follow' %>
-                    </button>
-                <% } %>
-            </div>
-        </div>
+                <!-- 原第92行代码 -->
+<% if (currentUser && currentUser._id && user._id && currentUser._id.toString() !== user._id.toString()) { %>
+  <div id="message" class=""></div>
+  <button 
+    id="followBtn" 
+    class="follow-btn <%= isFollowing ? 'unfollow' : 'follow' %>"
+    data-followee-id="<%= user._id %>"
+  >
+    <%= isFollowing ? 'Unfollow' : 'Follow' %>
+  </button>
+<% } %>
 
         <!-- 用户帖子区域（复用项目现有帖子展示逻辑） -->
         <div class="posts-container">
