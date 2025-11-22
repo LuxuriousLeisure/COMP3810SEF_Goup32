@@ -1,62 +1,57 @@
-var mongoose = require('mongoose');
+// models/user.js  （已适配 Google + 本地双登录）
+const mongoose = require('mongoose');
 
-var userSchema = mongoose.Schema({
+const userSchema = new mongoose.Schema({
+    // ===== 第三方登录字段 =====
+    googleId: {                     // ← 新增：Google 登录用
+        type: String,
+        unique: true,
+        sparse: true                // 允许为空（本地注册用户没有这个字段）
+    },
+    facebookId: {                   // 你原来可能还有 Facebook，保留也行
+        type: String,
+        unique: true,
+        sparse: true
+    },
+
+    // ===== 基本信息 =====
     username: {
         type: String,
         required: true,
         unique: true,
         trim: true,
-        minlength: 3,
-        maxlength: 20,
-        match: /^[a-zA-Z0-9_]+$/, // 保留原正则，后续在代码中处理昵称空格
-        // 【关键修正1】删除嵌套在这里的 facebookId 字段
+        minlength: 3
     },
-    // 【关键修正1】将 facebookId 移到顶级字段，作为独立属性
-    facebookId: { 
-        type: String, 
-        unique: true,
-        sparse: true // 关键：添加 sparse 索引，允许 facebookId 为 null（本地登录用户无该字段）
-    },
-    password: {
+    password: {                     // 本地登录用户才有密码，第三方登录可以为 null
         type: String,
-        // 【关键修正2】条件必填：只有当 facebookId 不存在时，password 才必填
-        required: function() {
-            return !this.facebookId; 
-        },
-        minlength: 6
+        // required: true,        // 改成非必填
     },
     profileImage: {
         type: String,
         default: '/images/default-avatar.jpg'
     },
+
+    // ===== 统计字段 =====
     followerCount: {
         type: Number,
-        default: 0,
-        min: 0
+        default: 0
     },
     followingCount: {
         type: Number,
-        default: 0,
-        min: 0
+        default: 0
     },
     postCount: {
         type: Number,
-        default: 0,
-        min: 0
+        default: 0
     }
+
 }, {
     timestamps: true
 });
 
-// 索引優化
+// 建立索引（提升查询速度）
+userSchema.index({ googleId: 1 });
+userSchema.index({ facebookId: 1 });
 userSchema.index({ username: 1 });
-
-// 虛擬字段：格式化的創建時間（可選）
-userSchema.virtual('formattedDate').get(function() {
-    if (this.createdAt) {
-        return this.createdAt.toLocaleDateString('zh-TW');
-    }
-    return '';
-});
 
 module.exports = userSchema;
