@@ -1,3 +1,7 @@
+//Input your own ID and Key in line 68 , 69for Github OAuth .Otherwise the program may not run properly
+//You can refer to: https://youtu.be/Bx1JqfPROXA?si=C3RwuHp6UxRBuHYE 
+
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
