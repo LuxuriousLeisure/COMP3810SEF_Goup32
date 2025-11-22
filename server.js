@@ -268,6 +268,56 @@ app.get('/home', isAuthenticated, async (req, res) => {
     }
 });
 
+
+// 获取关注列表（当前用户关注的人） GET /following
+app.get('/following', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.userId || req.user._id;
+
+    // 查询当前用户关注的所有用户
+    const followings = await Follow.find({ follower: userId })
+      .populate('followee', 'username profileImage followerCount followingCount') // 关联用户信息
+      .sort({ createdAt: -1 });
+
+    // 提取关注的用户列表
+    const followingUsers = followings.map(item => item.followee);
+
+    res.render('following-list', {
+      user: await User.findById(userId),
+      followingUsers: followingUsers,
+      message: followingUsers.length === 0 ? '暂无关注的用户' : null
+    });
+
+  } catch (error) {
+    console.error('获取关注列表失败:', error);
+    res.render('error', { error: '获取关注列表失败', statusCode: 500 });
+  }
+});
+
+// 获取粉丝列表（关注当前用户的人） GET /followers
+app.get('/followers', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.userId || req.user._id;
+
+    // 查询所有关注当前用户的人
+    const followers = await Follow.find({ followee: userId })
+      .populate('follower', 'username profileImage followerCount followingCount') // 关联用户信息
+      .sort({ createdAt: -1 });
+
+    // 提取粉丝用户列表
+    const followerUsers = followers.map(item => item.follower);
+
+    res.render('followers-list', {
+      user: await User.findById(userId),
+      followerUsers: followerUsers,
+      message: followerUsers.length === 0 ? '暂无粉丝' : null
+    });
+
+  } catch (error) {
+    console.error('获取粉丝列表失败:', error);
+    res.render('error', { error: '获取粉丝列表失败', statusCode: 500 });
+  }
+});
 // ===== 11. 路由：发布页面 GET /publish =====
 app.get('/publish', isAuthenticated, async (req, res) => {
     try {
@@ -553,6 +603,95 @@ app.post('/api/posts/:id/comments', isAuthenticated, async (req, res) => {
     }
 });
 
+
+// 关注用户 POST /api/follow/:followeeId
+app.post('/api/follow/:followeeId', isAuthenticated, async (req, res) => {
+  try {
+    const followerId = req.session.userId || req.user._id;
+    const followeeId = req.params.followeeId;
+
+    // 验证：不能关注自己
+    if (followerId.toString() === followeeId) {
+      return res.status(400).json({ success: false, message: '不能关注自己' });
+    }
+
+    // 验证：被关注用户是否存在
+    const followee = await User.findById(followeeId);
+    if (!followee) {
+      return res.status(404).json({ success: false, message: '用户不存在' });
+    }
+
+    // 检查是否已关注
+    const existingFollow = await Follow.findOne({ follower: followerId, followee: followeeId });
+    if (existingFollow) {
+      return res.status(400).json({ success: false, message: '已关注该用户' });
+    }
+
+    // 创建关注关系（使用事务确保数据一致性）
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 创建关注记录
+      await Follow.create([{ follower: followerId, followee: followeeId }], { session });
+
+      // 更新粉丝数（被关注者）和关注数（当前用户）
+      await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: 1 } }, { session });
+      await User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } }, { session });
+
+      await session.commitTransaction();
+      res.json({ success: true, message: '关注成功' });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
+
+  } catch (error) {
+    console.error('关注失败:', error);
+    res.status(500).json({ success: false, message: '关注失败，请重试' });
+  }
+});
+
+// 取消关注用户 DELETE /api/unfollow/:followeeId
+app.delete('/api/unfollow/:followeeId', isAuthenticated, async (req, res) => {
+  try {
+    const followerId = req.session.userId || req.user._id;
+    const followeeId = req.params.followeeId;
+
+    // 检查是否已关注
+    const existingFollow = await Follow.findOne({ follower: followerId, followee: followeeId });
+    if (!existingFollow) {
+      return res.status(400).json({ success: false, message: '未关注该用户' });
+    }
+
+    // 删除关注关系（事务确保一致性）
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 删除关注记录
+      await Follow.deleteOne({ _id: existingFollow._id }, { session });
+
+      // 更新粉丝数和关注数（递减）
+      await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: -1 } }, { session });
+      await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } }, { session });
+
+      await session.commitTransaction();
+      res.json({ success: true, message: '取消关注成功' });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
+
+  } catch (error) {
+    console.error('取消关注失败:', error);
+    res.status(500).json({ success: false, message: '取消关注失败，请重试' });
+  }
+});
 // ===== 17. 路由：点赞帖子 POST /api/posts/:id/like =====
 app.post('/api/posts/:id/like', isAuthenticated, async (req, res) => {
     try {
