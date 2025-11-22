@@ -1,4 +1,5 @@
 require('dotenv').config();
+const GitHubStrategy = require('passport-github2').Strategy;
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -60,7 +61,7 @@ passport.deserializeUser(async (id, done) => {
     } catch (err) { done(err); }
 });
 
-// ===== GitHub Strategy =====
+// ===== 替换原来的 FacebookStrategy 为 GitHubStrategy =====
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
@@ -69,33 +70,32 @@ passport.use(new GitHubStrategy({
 async (accessToken, refreshToken, profile, done) => {
     try {
         let user = await User.findOne({ githubId: profile.id });
-        if (user) return done(null, user);
 
-        // 生成安全的用户名
-        let username = profile.username || profile.displayName || 'github_user';
-        username = username.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
-        if (username.length < 3) username = 'user';
-        username = `${username}_${profile.id.slice(-4)}`;
+        if (!user) {
+            // 生成符合你正则的用户名（只允许字母数字下划线）
+            let rawName = (profile.username || profile.displayName || 'github_user').toLowerCase();
+            let username = rawName.replace(/[^a-z0-9_]/g, '_');
+            while (username.length < 3) username += '_';
+            username = username.substring(0, 20);
 
-        // 确保唯一
-        let finalName = username;
-        let i = 1;
-        while (await User.findOne({ username: finalName })) {
-            finalName = `${username}_${i++}`;
+            // 保证唯一性
+            let finalUsername = username;
+            let i = 1;
+            while (await User.findOne({ username: finalUsername })) {
+                finalUsername = `${username}_${i++}`.substring(0, 20);
+            }
+
+            user = await User.create({
+                githubId: profile.id,
+                username: finalUsername,
+                profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg'
+            });
+            console.log(`GitHub 新用户注册: ${finalUsername}`);
         }
 
-        user = await User.create({
-            githubId: profile.id,
-            username: finalName,
-            profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg',
-            followerCount: 0,
-            followingCount: 0,
-            postCount: 0
-        });
-
-        console.log(`GitHub 新用户注册: ${user.username}`);
         return done(null, user);
     } catch (err) {
+        console.error('GitHub 登录错误:', err);
         return done(err);
     }
 }));
@@ -110,14 +110,17 @@ app.get('/login', (req, res) => res.render('login', { message: req.query.message
 app.get('/register', (req, res) => res.render('register', { message: null }));
 
 //Github login
-app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+app.get('/auth/github', 
+    passport.authenticate('github', { scope: ['user:email'] })
+);
+
 app.get('/auth/github/callback',
-    passport.authenticate('github', { failureRedirect: '/login' }),
+    passport.authenticate('github', { failureRedirect: '/login?message=GitHub登录失败' }),
     (req, res) => {
         req.session.userId = req.user._id.toString();
         req.session.username = req.user.username;
         req.session.profileImage = req.user.profileImage;
-        console.log(`GitHub 登录成功: ${req.user.username}`);
+        console.log(`GitHub 用户登录成功: ${req.user.username}`);
         res.redirect('/home');
     }
 );
