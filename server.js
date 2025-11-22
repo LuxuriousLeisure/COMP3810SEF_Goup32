@@ -1,4 +1,5 @@
 //You need to input your key in line 68,69 to perform the OAuth for github
+//Reference：https://youtu.be/Bx1JqfPROXA?si=C3RwuHp6UxRBuHYE
 
 require('dotenv').config();
 const express = require('express');
