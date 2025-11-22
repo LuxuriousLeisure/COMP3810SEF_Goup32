@@ -1,10 +1,11 @@
 {
   "name": "instagram-clone",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "Group project for COMP3810SEF",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,15 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "mongoose": "^8.20.0"
+    "mongoose": "^8.20.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "body-parser": "^1.20.3"
   }
 }
+
+
+  
+ 
+
+
