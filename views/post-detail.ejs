@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Post Detail</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <%- include('partials/navbar') %>
+        
+        <div class="content">
+            <div class="post-detail-container">
+                <!-- 帖子主体 -->
+                <div class="post-main">
+                    <!-- 图片 -->
+                    <div class="post-images-large">
+                        <% if (post.images && post.images.length > 0) { %>
+                            <% post.images.forEach((img) => { %>
+                                <img src="<%= img %>" alt="post image" class="post-img">
+                            <% }); %>
+                        <% } %>
+                    </div>
+                    
+                    <!-- 帖子信息 -->
+                    <div class="post-info">
+                        <div class="post-header">
+                            <img src="<%= post.userId.profileImage %>" class="avatar" alt="avatar">
+                            <p class="username"><%= post.userId.username %></p>
+                        </div>
+                        
+                        <p class="content"><%= post.content %></p>
+                        
+                        <!-- 标签 -->
+                        <% if (post.tags && post.tags.length > 0) { %>
+                            <div class="tags">
+                                <% post.tags.forEach((tag) => { %>
+                                    <a href="/search?q=%23<%= tag %>" class="tag">#<%= tag %></a>
+                                <% }); %>
+                            </div>
+                        <% } %>
+                        
+                        <!-- 点赞区 -->
+                        <div class="like-section">
+                            <button onclick="likePost('<%= post._id %>')" class="like-btn">
+                                ❤️ Like (<span id="likeCount"><%= post.likeCount %></span>)
+                            </button>
+                        </div>
+                        
+                        <!-- 删除按钮（仅所有者） -->
+                        <% if (isOwner) { %>
+                            <button onclick="deletePost('<%= post._id %>')" class="delete-btn">
+                                🗑️ Delete Post
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <!-- 评论区 -->
+                <div class="comments-section">
+                    <%- include('partials/comment-section', { postId: post._id, comments: comments }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function likePost(postId) {
+            fetch(`/api/posts/${postId}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('likeCount').innerText = data.likeCount;
+                    alert('❤️ Liked!');
+                }
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+        
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                fetch(`/api/posts/${postId}`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ Post deleted');
+                            window.location.href = '/home';
+                        }
+                    })
+                    .catch(err => alert('Error: ' + err));
+            }
+        }
+    </script>
+</body>
+</html>

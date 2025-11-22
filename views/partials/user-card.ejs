@@ -1,0 +1,11 @@
+<div class="user-card">
+    <img src="<%= user.profileImage %>" class="user-avatar">
+    <p class="username"><%= user.username %></p>
+    <p class="follower-count">Followers: <%= user.followerCount %></p>
+    
+    <div class="user-actions">
+        <a href="/profile?username=<%= user.username %>" class="view-profile-btn">
+            View Profile
+        </a>
+    </div>
+</div>
