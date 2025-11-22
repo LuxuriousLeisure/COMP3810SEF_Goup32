@@ -63,8 +63,8 @@ passport.deserializeUser(async (id, done) => {
 
 // ===== 替换原来的 FacebookStrategy 为 GitHubStrategy =====
 passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    clientID:Ov23liqPssPdcDgVDIT9,
+    clientSecret: 213a8f0dbf669245589a952cbb5f52ef2e5746fc,
     callbackURL: "http://localhost:3000/auth/github/callback"
 },
 async (accessToken, refreshToken, profile, done) => {
