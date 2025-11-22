@@ -1,3 +1,5 @@
+//You need to input your key in line 68,69 to perform the OAuth for github
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -62,8 +64,8 @@ passport.deserializeUser(async (id, done) => {
 
 // ===== 替换原来的 FacebookStrategy 为 GitHubStrategy =====
 passport.use(new GitHubStrategy({
-    clientID:"Ov23liqPssPdcDgVDIT9",
-    clientSecret: "213a8f0dbf669245589a952cbb5f52ef2e5746fc",
+    clientID:"youID",
+    clientSecret: "youClientSecret",
     callbackURL: "http://localhost:3000/auth/github/callback"
 },
 async (accessToken, refreshToken, profile, done) => {
