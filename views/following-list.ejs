@@ -1,172 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Instagram Clone - Following</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Following | Instagram Clone</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .list-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
+        .following-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
         }
-
-        .list-header {
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .list-header h1 {
-            color: #262626;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .list-header p {
-            color: #8e8e8e;
-            font-size: 14px;
-        }
-
-        .user-list {
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .user-list-item {
+        .page-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border-bottom: 1px solid #efefef;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 1rem;
         }
-
-        .user-list-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-list-info {
+        .user-card {
             display: flex;
             align-items: center;
-            gap: 12px;
-            flex: 1;
+            gap: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s;
         }
-
-        .user-list-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #dbdbdb;
+        .user-card:hover {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .user-list-username {
-            font-weight: 600;
-            color: #262626;
-            font-size: 14px;
-        }
-
-        .user-list-username a {
-            color: #262626;
-            text-decoration: none;
-        }
-
-        .user-list-username a:hover {
-            color: #3897f0;
-        }
-
-        .btn-remove {
-            padding: 8px 16px;
-            background-color: #ed4956;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .btn-remove:hover {
-            background-color: #c92a35;
-        }
-
-        .btn-back {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background-color: #dbdbdb;
-            color: #262626;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .btn-back:hover {
-            background-color: #c7c7c7;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8e8e8e;
-        }
-
-        .empty-state svg {
+        .user-avatar {
             width: 60px;
             height: 60px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .user-stats {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .action-btn {
+            padding: 0.4rem 1rem;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            background: #efefef;
+            color: #262626;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .empty-message {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #888;
+            margin: 4rem 0;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <%- include('partials/navbar') %>
-        
-        <div class="content">
-            <div class="list-container">
-                <a href="/profile" class="btn-back">← 返回個人資料</a>
-
-                <div class="list-header">
-                    <h1>👥 正在關注</h1>
-                    <p><%= followingList.length %> 個用戶</p>
-                </div>
-
-                <div class="user-list">
-                    <% if (followingList.length === 0) { %>
-                        <div class="empty-state">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            <h3>你還沒有關注任何人</h3>
-                            <p>去探索並關注其他用戶吧！</p>
-                        </div>
-                    <% } else { %>
-                        <% followingList.forEach(followingUser => { %>
-                            <div class="user-list-item">
-                                <div class="user-list-info">
-                                    <img 
-                                        src="<%= followingUser.profileImage || '/images/default-avatar.jpg' %>" 
-                                        alt="<%= followingUser.username %>" 
-                                        class="user-list-avatar"
-                                    >
-                                    <div class="user-list-username">
-                                        <a href="/users/<%= followingUser._id %>"><%= followingUser.username %></a>
-                                    </div>
-                                </div>
-                                <form action="/following/<%= followingUser._id %>/unfollow" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn-remove">取消關注</button>
-                                </form>
-                            </div>
-                        <% }) %>
-                    <% } %>
-                </div>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/home" class="logo">Instagram Clone</a>
+            <div class="nav-links">
+                <a href="/home">Home</a>
+                <a href="/publish">Publish</a>
+                <a href="/following" class="active">Following</a>
+                <a href="/followers">Followers</a>
+                <a href="/logout">Logout</a>
             </div>
         </div>
+    </nav>
+
+    <div class="following-container">
+        <div class="page-header">
+            <h1>My Following (<%= followingUsers.length %>)</h1>
+        </div>
+
+        <% if (message) { %>
+            <div class="empty-message"><%= message %></div>
+        <% } else { %>
+            <div class="users-list">
+                <% followingUsers.forEach(followedUser => { %>
+                    <div class="user-card">
+                        <img 
+                            src="<%= followedUser.profileImage || '/images/default-avatar.png' %>" 
+                            alt="<%= followedUser.username %>" 
+                            class="user-avatar"
+                        >
+                        <div class="user-info">
+                            <div class="username"><%= followedUser.username %></div>
+                            <div class="user-stats">
+                                <%= followedUser.followerCount || 0 %> followers · <%= followedUser.followingCount || 0 %> following
+                            </div>
+                        </div>
+                        <a href="/user/<%= followedUser._id %>" class="action-btn">View Profile</a>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
     </div>
 </body>
 </html>
