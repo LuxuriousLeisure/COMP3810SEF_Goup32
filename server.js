@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const GitHubStrategy = require('passport-github2').Strategy;
 
 const app = express();
 
@@ -42,142 +42,85 @@ app.use(express.json());
 
 // Session config
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
+    secret: process.env.SESSION_SECRET || 'github-oauth-secret-2025',
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-        maxAge: 1000 * 60 * 60 * 24,
-        httpOnly: true
-    }
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 // Passport config
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
+passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await User.findById(id);
         done(null, user);
-    } catch (err) {
-        done(err);
-    }
+    } catch (err) { done(err); }
 });
 
-// ==================== Google Strategy ====================
-// ← 完全替换原来的 FacebookStrategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,      // ← 强烈建议放在 .env
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'http://localhost:3000/auth/google/callback',  // 本地测试
-    // callbackURL: '/auth/google/callback', // 部署时可改为相对路径
+// ===== GitHub Strategy =====
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/github/callback"
 },
 async (accessToken, refreshToken, profile, done) => {
     try {
-        // 通过 googleId 查找用户
-        let user = await User.findOne({ googleId: profile.id });
+        let user = await User.findOne({ githubId: profile.id });
+        if (user) return done(null, user);
 
-        if (user) {
-            return done(null, user);
+        // 生成安全的用户名
+        let username = profile.username || profile.displayName || 'github_user';
+        username = username.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+        if (username.length < 3) username = 'user';
+        username = `${username}_${profile.id.slice(-4)}`;
+
+        // 确保唯一
+        let finalName = username;
+        let i = 1;
+        while (await User.findOne({ username: finalName })) {
+            finalName = `${username}_${i++}`;
         }
 
-        // 生成安全的 username（Google 名字可能有空格、中文）
-        let baseUsername = profile.displayName || 'google_user';
-        let formattedUsername = baseUsername
-            .replace(/[^a-zA-Z0-9_]/g, '_')   // 只保留字母数字下划线
-            .replace(/_+/g, '_')             // 多个下划线合并
-            .toLowerCase();
-
-        // 避免用户名为空或太短
-        if (!formattedUsername || formattedUsername.length < 3) {
-            formattedUsername = 'user';
-        }
-
-        // 避免重复：追加 Google ID 后4位
-        formattedUsername = `${formattedUsername}_${profile.id.slice(-4)}`;
-
-        // 确保用户名唯一（极端情况再加随机数）
-        let finalUsername = formattedUsername;
-        let counter = 1;
-        while (await User.findOne({ username: finalUsername })) {
-            finalUsername = `${formattedUsername}_${counter++}`;
-        }
-
-        // 创建新用户
         user = await User.create({
-            googleId: profile.id,
-            username: finalUsername,
+            githubId: profile.id,
+            username: finalName,
             profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg',
-            // 本地登录用户才需要 password，Google 用户不需要
             followerCount: 0,
             followingCount: 0,
             postCount: 0
         });
 
-        console.log(`Google 用户注册成功: ${user.username}`);
+        console.log(`GitHub 新用户注册: ${user.username}`);
         return done(null, user);
     } catch (err) {
-        console.error('Google ログイン创建用户失败：', err);
         return done(err);
     }
 }));
 
-
-// middleware Authentication
 function isAuthenticated(req, res, next) {
-    if (req.session.userId || req.isAuthenticated()) {
-        next();
-    } else {
-        res.redirect('/login');
-    }
+    if (req.session.userId || req.isAuthenticated()) next();
+    else res.redirect('/login');
 }
 
-// ===== Route:home page GET / =====
-app.get('/', (req, res) => {
-    if (req.session.userId || req.isAuthenticated()) {
-        res.redirect('/home');
-    } else {
-        res.redirect('/login');
-    }
-});
+app.get('/', (req, res) => req.isAuthenticated() ? res.redirect('/home') : res.redirect('/login'));
+app.get('/login', (req, res) => res.render('login', { message: req.query.message || null }));
+app.get('/register', (req, res) => res.render('register', { message: null }));
 
-// ===== route：login page GET /login =====
-app.get('/login', (req, res) => {
-    res.render('login', { 
-        message: req.query.message || null 
-    });
-});
-
-// ===== route:register GET /register =====
-app.get('/register', (req, res) => {
-    res.render('register', { 
-        message: req.query.message || null 
-    });
-});
-
-// ==================== Google 登录路由（替换 Facebook）===================
-// 开始 Google 登录
-app.get('/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-// Google 回调
-app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
+//Github login
+app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+app.get('/auth/github/callback',
+    passport.authenticate('github', { failureRedirect: '/login' }),
     (req, res) => {
-        // 成功后设置 session（和你本地登录保持一致）
         req.session.userId = req.user._id.toString();
         req.session.username = req.user.username;
         req.session.profileImage = req.user.profileImage;
-        console.log(`Google 用户登录成功: ${req.user.username}`);
+        console.log(`GitHub 登录成功: ${req.user.username}`);
         res.redirect('/home');
     }
 );
-
 // ===== 8. 路由：用户登录 POST /api/users/login =====
 app.post('/api/users/login', async (req, res) => {
     try {
