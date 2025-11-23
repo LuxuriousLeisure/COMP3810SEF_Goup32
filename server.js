@@ -1,3 +1,4 @@
+const path = require('path');
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -8,8 +9,10 @@ const GitHubStrategy = require('passport-github2').Strategy;
 const app = express();
 
 // ===== DB connection =====
-const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
-const dbName = 'COMP3810SEFGroup32';
+// const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+// const dbName = 'COMP3810SEFGroup32';
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.DB_NAME;
 
 mongoose.connect(uri, { dbName: dbName })
     .then(() => {
@@ -34,9 +37,11 @@ const Follow = mongoose.model('Follow', followSchema);
 
 
 // Middleware
+const viewsPath = path.join(__dirname, 'views');
 app.set('view engine', 'ejs');
-app.set('views', './views');
-app.use(express.static('public'));
+app.set('views', viewsPath);
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -62,9 +67,12 @@ passport.deserializeUser(async (id, done) => {
 
 // ===== 替换原来的 FacebookStrategy 为 GitHubStrategy =====
 passport.use(new GitHubStrategy({
-    clientID:"Ov23lizxsl8ccP70QnBZ",
-    clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
-    callbackURL: "http://localhost:3000/auth/github/callback"
+    // clientID:"Ov23lizxsl8ccP70QnBZ",
+    // clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
+    // callbackURL: "http://localhost:3000/auth/github/callback"
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.GITHUB_CALLBACK_URL
 },
 async (accessToken, refreshToken, profile, done) => {
     try {
@@ -1109,10 +1117,14 @@ app.use((req, res) => {
 });
 
 // ===== 31. 启动服务器 =====
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//     console.log(`\n🚀 服务器运行在 http://localhost:${PORT}`);
+//     console.log(`📍 访问 http://localhost:${PORT}/login 开始使用\n`);
+// });
+// 新增：配置端口（Vercel要求使用动态端口）
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`\n🚀 服务器运行在 http://localhost:${PORT}`);
-    console.log(`📍 访问 http://localhost:${PORT}/login 开始使用\n`);
+  console.log(`Server running on port ${PORT}`);
 });
-
 
