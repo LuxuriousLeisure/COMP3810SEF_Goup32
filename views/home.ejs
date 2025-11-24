@@ -1,43 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Clone - Home</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="main-container">
-        <!-- 左侧导航栏 -->
+        <!-- Left sidebar navigation -->
         <%- include('partials/navbar') %>
-        
-        <!-- 中心内容 -->
+       
+        <!-- Main content area -->
         <div class="content">
-            <h1>📸 Feed</h1>
-            
+            <h1>Feed</h1>
+           
             <% if (message) { %>
                 <div class="alert"><%= message %></div>
             <% } %>
-            
+           
             <div class="posts-container">
                 <% if (posts && posts.length > 0) { %>
                     <% posts.forEach((post) => { %>
                         <%- include('partials/post-card', { post: post }) %>
                     <% }); %>
                 <% } else { %>
-                    <p class="no-posts">No posts yet. Start following users!</p>
+                    <p class="no-posts">No posts yet. Start following people to see their updates!</p>
                 <% } %>
             </div>
-            
-            <!-- 分页 -->
+           
+            <!-- Pagination -->
             <% if (totalPages > 1) { %>
                 <div class="pagination">
                     <% if (currentPage > 1) { %>
-                        <a href="/home?page=<%= parseInt(currentPage) - 1 %>">← Previous</a>
+                        <a href="/home?page=<%= parseInt(currentPage) - 1 %>">Previous</a>
                     <% } %>
-                    
-                    <span>Page <%= currentPage %> / <%= totalPages %></span>
-                    
+                   
+                    <span>Page <%= currentPage %> of <%= totalPages %></span>
+                   
                     <% if (parseInt(currentPage) < totalPages) { %>
-                        <a href="/home?page=<%= parseInt(currentPage) + 1 %>">Next →</a>
+                        <a href="/home?page=<%= parseInt(currentPage) + 1 %>">Next</a>
                     <% } %>
                 </div>
             <% } %>
