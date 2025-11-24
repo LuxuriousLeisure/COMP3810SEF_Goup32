@@ -16,8 +16,9 @@ var followSchema = mongoose.Schema({
     timestamps: true
 });
 
-// 複合唯一索引
+// Composite unique index
 followSchema.index({ follower: 1, followee: 1 }, { unique: true });
 
 module.exports = followSchema;
+
 
