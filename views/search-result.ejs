@@ -1,28 +1,25 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search results - social networking sites</title>
+    <title>Search Results - Social Network</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             background-color: #f4f2eb;
             color: #333;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-
         .header {
             background-color: #254e7a;
             color: white;
@@ -30,17 +27,14 @@
             margin-bottom: 30px;
             border-radius: 8px;
         }
-
         .header h1 {
             margin-bottom: 10px;
         }
-
         .search-form {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-
         .search-form input {
             flex: 1;
             padding: 10px 15px;
@@ -48,7 +42,6 @@
             border-radius: 5px;
             font-size: 16px;
         }
-
         .search-form button {
             padding: 10px 25px;
             background-color: #7ebce1;
@@ -59,18 +52,15 @@
             font-size: 16px;
             font-weight: bold;
         }
-
         .search-form button:hover {
             background-color: #517fab;
         }
-
         .search-info {
             margin: 20px 0;
             padding: 15px;
             background-color: #c5e1ef;
             border-radius: 8px;
         }
-
         .section-title {
             font-size: 24px;
             color: #254e7a;
@@ -78,15 +68,13 @@
             padding-bottom: 10px;
             border-bottom: 3px solid #517fab;
         }
-
-        /* 用戶卡片 */
+        /* User cards */
         .users-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
         .user-card {
             background-color: white;
             border-radius: 10px;
@@ -94,19 +82,16 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-
         .user-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-
         .user-header {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
         }
-
         .user-avatar {
             width: 60px;
             height: 60px;
@@ -114,24 +99,20 @@
             object-fit: cover;
             border: 3px solid #7ebce1;
         }
-
         .user-info h3 {
             color: #254e7a;
             margin-bottom: 5px;
         }
-
         .user-stats {
             display: flex;
             gap: 20px;
             font-size: 14px;
             color: #666;
         }
-
         .user-stats span {
             font-weight: bold;
             color: #517fab;
         }
-
         .view-profile-btn {
             display: block;
             width: 100%;
@@ -144,18 +125,15 @@
             margin-top: 15px;
             font-weight: bold;
         }
-
         .view-profile-btn:hover {
             background-color: #517fab;
         }
-
-        /* 帖子卡片 */
+        /* Post cards */
         .posts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
-
         .post-card {
             background-color: white;
             border-radius: 10px;
@@ -163,53 +141,44 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-
         .post-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-
         .post-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
         }
-
         .post-content {
             padding: 15px;
         }
-
         .post-author {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 10px;
         }
-
         .post-author-avatar {
             width: 35px;
             height: 35px;
             border-radius: 50%;
             object-fit: cover;
         }
-
         .post-author-name {
             font-weight: bold;
             color: #254e7a;
         }
-
         .post-text {
             color: #333;
             margin-bottom: 10px;
             line-height: 1.5;
         }
-
         .post-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
         }
-
         .tag {
             background-color: #c5e1ef;
             color: #254e7a;
@@ -218,19 +187,16 @@
             font-size: 13px;
             text-decoration: none;
         }
-
         .tag:hover {
             background-color: #7ebce1;
             color: white;
         }
-
         .post-footer {
             padding: 15px;
             border-top: 1px solid #eee;
             display: flex;
             justify-content: space-between;
         }
-
         .view-post-btn {
             padding: 8px 20px;
             background-color: #517fab;
@@ -239,11 +205,9 @@
             border-radius: 5px;
             font-size: 14px;
         }
-
         .view-post-btn:hover {
             background-color: #254e7a;
         }
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -251,23 +215,19 @@
             border-radius: 10px;
             margin: 20px 0;
         }
-
         .empty-state svg {
             width: 80px;
             height: 80px;
             color: #517fab;
             margin-bottom: 20px;
         }
-
         .empty-state h3 {
             color: #254e7a;
             margin-bottom: 10px;
         }
-
         .empty-state p {
             color: #666;
         }
-
         .back-link {
             display: inline-block;
             margin-bottom: 20px;
@@ -275,7 +235,6 @@
             text-decoration: none;
             font-weight: bold;
         }
-
         .back-link:hover {
             color: #517fab;
         }
@@ -283,71 +242,70 @@
 </head>
 <body>
     <div class="container">
-        <a href="/home" class="back-link">← 返回首頁</a>
-
+        <a href="/home" class="back-link">Back to Home</a>
         <div class="header">
-            <h1>🔍 搜尋結果</h1>
+            <h1>Search Results</h1>
             <form action="/search" method="GET" class="search-form">
-                <input 
-                    type="text" 
-                    name="q" 
-                    placeholder="搜尋用戶名或 #標籤..." 
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Search usernames or #tags..."
                     value="<%= searchQuery || '' %>"
                     required
                 >
-                <button type="submit">搜尋</button>
+                <button type="submit">Search</button>
             </form>
         </div>
 
         <% if (searchQuery) { %>
             <div class="search-info">
                 <% if (searchType === 'tag') { %>
-                    <strong>🏷️ 標籤搜尋：</strong>#<%= searchQuery %>
+                    <strong>Tag Search:</strong> #<%= searchQuery %>
                 <% } else if (searchType === 'user') { %>
-                    <strong>👤 用戶搜尋：</strong><%= searchQuery %>
+                    <strong>User Search:</strong> <%= searchQuery %>
                 <% } %>
             </div>
 
-            <!-- 用戶結果 -->
+            <!-- User results -->
             <% if (users && users.length > 0) { %>
-                <h2 class="section-title">👥 找到 <%= users.length %> 個用戶</h2>
+                <h2 class="section-title">Found <%= users.length %> User<%= users.length > 1 ? 's' : '' %></h2>
                 <div class="users-grid">
                     <% users.forEach(searchUser => { %>
                         <div class="user-card">
                             <div class="user-header">
-                                <img 
-                                    src="<%= searchUser.profileImage || '/images/default-avatar.jpg' %>" 
-                                    alt="<%= searchUser.username %>" 
+                                <img
+                                    src="<%= searchUser.profileImage || '/images/default-avatar.jpg' %>"
+                                    alt="<%= searchUser.username %>"
                                     class="user-avatar"
                                 >
                                 <div class="user-info">
                                     <h3><%= searchUser.username %></h3>
                                     <div class="user-stats">
-                                        <div>帖子 <span><%= searchUser.postCount || 0 %></span></div>
-                                        <div>粉絲 <span><%= searchUser.followerCount || 0 %></span></div>
+                                        <div>Posts <span><%= searchUser.postCount || 0 %></span></div>
+                                        <div>Followers <span><%= searchUser.followerCount || 0 %></span></div>
                                     </div>
                                 </div>
                             </div>
-                            <a href="/users/<%= searchUser._id %>" class="view-profile-btn">查看資料</a>
+                            <a href="/users/<%= searchUser._id %>" class="view-profile-btn">View Profile</a>
                         </div>
                     <% }) %>
                 </div>
             <% } %>
 
-            <!-- 帖子結果 -->
+            <!-- Post results -->
             <% if (posts && posts.length > 0) { %>
-                <h2 class="section-title">📝 找到 <%= posts.length %> 個帖子</h2>
+                <h2 class="section-title">Found <%= posts.length %> Post<%= posts.length > 1 ? 's' : '' %></h2>
                 <div class="posts-grid">
                     <% posts.forEach(post => { %>
                         <div class="post-card">
                             <% if (post.images && post.images.length > 0) { %>
-                                <img src="<%= post.images[0] %>" alt="Post" class="post-image">
+                                <img src="<%= post.images[0] %>" alt="Post image" class="post-image">
                             <% } %>
                             <div class="post-content">
                                 <div class="post-author">
-                                    <img 
-                                        src="<%= post.userId.profileImage || '/images/default-avatar.jpg' %>" 
-                                        alt="<%= post.userId.username %>" 
+                                    <img
+                                        src="<%= post.userId.profileImage || '/images/default-avatar.jpg' %>"
+                                        alt="<%= post.userId.username %>"
                                         class="post-author-avatar"
                                     >
                                     <span class="post-author-name"><%= post.userId.username %></span>
@@ -364,22 +322,22 @@
                                 <% } %>
                             </div>
                             <div class="post-footer">
-                                <span>❤️ <%= post.likeCount || 0 %> 個讚</span>
-                                <a href="/posts/<%= post._id %>" class="view-post-btn">查看帖子</a>
+                                <span>Likes <%= post.likeCount || 0 %></span>
+                                <a href="/posts/<%= post._id %>" class="view-post-btn">View Post</a>
                             </div>
                         </div>
                     <% }) %>
                 </div>
             <% } %>
 
-            <!-- 沒有結果 -->
+            <!-- No results -->
             <% if ((!users || users.length === 0) && (!posts || posts.length === 0)) { %>
                 <div class="empty-state">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <h3>Can't find the result</h3>
-                    <p>Not found「<%= searchQuery %>」Relevant users or posts</p>
+                    <h3>No Results Found</h3>
+                    <p>We couldn't find any users or posts related to "<%= searchQuery %>"</p>
                 </div>
             <% } %>
         <% } else { %>
@@ -387,12 +345,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <h3>Start Search</h3>
-                <p>Enter your username or the # tag to search for content</p>
+                <h3>Start Searching</h3>
+                <p>Enter a username or #tag to find content</p>
             </div>
         <% } %>
     </div>
 </body>
 </html>
-
-
