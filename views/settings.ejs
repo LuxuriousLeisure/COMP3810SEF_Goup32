@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Clone - Settings</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -9,23 +11,19 @@
             margin: 50px auto;
             padding: 20px;
         }
-
         .settings-header {
             text-align: center;
             margin-bottom: 40px;
         }
-
         .settings-header h1 {
             color: #262626;
             font-size: 28px;
             margin-bottom: 10px;
         }
-
         .settings-sections {
             display: grid;
             gap: 20px;
         }
-
         .settings-card {
             background: white;
             border: 1px solid #dbdbdb;
@@ -33,7 +31,6 @@
             padding: 25px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
         .settings-card h2 {
             color: #262626;
             font-size: 18px;
@@ -41,11 +38,9 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #efefef;
         }
-
         .form-group {
             margin-bottom: 20px;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -53,7 +48,6 @@
             color: #262626;
             font-size: 14px;
         }
-
         .form-group input {
             width: 100%;
             padding: 12px;
@@ -62,12 +56,10 @@
             font-size: 14px;
             box-sizing: border-box;
         }
-
         .form-group input:focus {
             outline: none;
             border-color: #3897f0;
         }
-
         .btn-submit {
             width: 100%;
             padding: 12px;
@@ -79,11 +71,9 @@
             font-size: 14px;
             font-weight: bold;
         }
-
         .btn-submit:hover {
             background-color: #2b7ac4;
         }
-
         .btn-back {
             display: inline-block;
             margin-bottom: 20px;
@@ -94,11 +84,9 @@
             border-radius: 5px;
             font-weight: bold;
         }
-
         .btn-back:hover {
             background-color: #c7c7c7;
         }
-
         .message {
             padding: 12px;
             margin-bottom: 20px;
@@ -106,19 +94,16 @@
             text-align: center;
             font-weight: 600;
         }
-
         .message.success {
             background-color: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-
         .message.error {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-
         .current-avatar {
             width: 100px;
             height: 100px;
@@ -132,14 +117,13 @@
 <body>
     <div class="main-container">
         <%- include('partials/navbar') %>
-        
+       
         <div class="content">
             <div class="settings-container">
-                <a href="/profile" class="btn-back">← Return Personal Information</a>
-
+                <a href="/profile" class="btn-back">Back to Profile</a>
                 <div class="settings-header">
-                    <h1>⚙️ account setting</h1>
-                    <p style="color: #8e8e8e;">Manage your personal profile and account Settings</p>
+                    <h1>Account Settings</h1>
+                    <p style="color: #8e8e8e;">Manage your profile and account preferences</p>
                 </div>
 
                 <% if (message) { %>
@@ -149,84 +133,86 @@
                 <% } %>
 
                 <div class="settings-sections">
-                    <!-- Update the avatar -->
+                    <!-- Update Avatar -->
                     <div class="settings-card">
-                        <h2>🖼️ Update the avatar</h2>
-                        <img src="<%= user.profileImage %>" class="current-avatar" alt="當前頭像">
+                        <h2>Update Avatar</h2>
+                        <img src="<%= user.profileImage || '/images/default-avatar.jpg' %>" 
+                             class="current-avatar" 
+                             alt="Current avatar">
                         <form action="/settings/update-avatar" method="POST">
                             <div class="form-group">
-                                <label for="avatarUrl">New avatar URL：</label>
-                                <input 
-                                    type="url" 
-                                    id="avatarUrl" 
-                                    name="avatarUrl" 
-                                    placeholder="https://example.com/avatar.jpg" 
+                                <label for="avatarUrl">New Avatar URL:</label>
+                                <input
+                                    type="url"
+                                    id="avatarUrl"
+                                    name="avatarUrl"
+                                    placeholder="https://example.com/avatar.jpg"
                                     required
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">Update the avatar</button>
+                            <button type="submit" class="btn-submit">Update Avatar</button>
                         </form>
                     </div>
 
-                    <!-- Update the user name -->
+                    <!-- Update Username -->
                     <div class="settings-card">
-                        <h2>✏️ Update the user name</h2>
+                        <h2>Update Username</h2>
                         <form action="/settings/update-username" method="POST">
                             <div class="form-group">
-                                <label for="newUsername">current user name：<strong><%= user.username %></strong></label>
+                                <label>Current Username: <strong><%= user.username %></strong></label>
                             </div>
                             <div class="form-group">
-                                <label for="newUsername">New username：</label>
-                                <input 
-                                    type="text" 
-                                    id="newUsername" 
-                                    name="newUsername" 
-                                    placeholder="Enter a new username" 
+                                <label for="newUsername">New Username:</label>
+                                <input
+                                    type="text"
+                                    id="newUsername"
+                                    name="newUsername"
+                                    placeholder="Enter a new username"
                                     required
                                     minlength="3"
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">Update the user name</button>
+                            <button type="submit" class="btn-submit">Update Username</button>
                         </form>
                     </div>
 
-                    <!-- update password -->
+                    <!-- Update Password -->
                     <div class="settings-card">
-                        <h2>🔒 update password</h2>
+                        <h2>Change Password</h2>
                         <form action="/settings/update-password" method="POST">
                             <div class="form-group">
-                                <label for="currentPassword">Current Password：</label>
-                                <input 
-                                    type="password" 
-                                    id="currentPassword" 
-                                    name="currentPassword" 
-                                    placeholder="Enter the current password" 
+                                <label for="currentPassword">Current Password:</label>
+                                <input
+                                    type="password"
+                                    id="currentPassword"
+                                    name="currentPassword"
+                                    placeholder="Enter your current password"
                                     required
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="newPassword">new password：</label>
-                                <input 
-                                    type="password" 
-                                    id="newPassword" 
-                                    name="newPassword" 
-                                    placeholder="Enter the new password" 
+                                <label for="newPassword">New Password:</label>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    name="newPassword"
+                                    placeholder="Enter a new password"
                                     required
                                     minlength="6"
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="confirmPassword">Enter the new password again：</label>
-                                <input 
-                                    type="password" 
-                                    id="confirmPassword" 
-                                    name="confirmPassword" 
-                                    placeholder="Enter the new password again" 
+                                <label for="confirmPassword">Confirm New Password:</label>
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    placeholder="Confirm your new password"
                                     required
                                     minlength="6"
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">update password</button>
+                            <button type="submit" class="btn-submit">Change Password</button>
                         </form>
                     </div>
                 </div>
