@@ -7,21 +7,15 @@ const GitHubStrategy = require('passport-github2').Strategy;
 
 const app = express();
 
-// ===== DB connection =====
-const uri  = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+// ===== Database Connection =====
+const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
 const dbName = 'COMP3810SEFGroup32';
 
-mongoose.connect(uri, { dbName: dbName })
-    .then(() => {
-        console.log('Connected to MongoDB');
-    })
-    .catch((err) => {
-        console.error('Error connecting to MongoDB:', err);
-    });
+mongoose.connect(uri, { dbName })
+    .then(() => console.log('Connected to MongoDB successfully'))
+    .catch(err => console.error('MongoDB connection failed:', err));
 
-
-
-// ===== import Models =====
+// ===== Import Models =====
 const userSchema = require('./models/user');
 const postSchema = require('./models/post');
 const commentSchema = require('./models/comment');
@@ -32,23 +26,22 @@ const Post = mongoose.model('Post', postSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 const Follow = mongoose.model('Follow', followSchema);
 
-
-// Middleware
+// ===== Middleware Setup =====
 app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session config
+// Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'github-oauth-secret-2025',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 
-// Passport config
+// Passport setup
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -57,12 +50,14 @@ passport.deserializeUser(async (id, done) => {
     try {
         const user = await User.findById(id);
         done(null, user);
-    } catch (err) { done(err); }
+    } catch (err) {
+        done(err);
+    }
 });
 
-// ===== GitHubStrategy =====
+// ===== GitHub OAuth Strategy =====
 passport.use(new GitHubStrategy({
-    clientID:"Ov23lizxsl8ccP70QnBZ",
+    clientID: "Ov23lizxsl8ccP70QnBZ",
     clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
     callbackURL: "http://localhost:3000/auth/github/callback"
 },
@@ -71,21 +66,17 @@ async (accessToken, refreshToken, profile, done) => {
         let user = await User.findOne({ githubId: profile.id });
 
         if (!user) {
-            // Generate a username that conforms to your regular expression (only allowing alphanumeric underscores)
-
-			
+            // Generate clean username: only letters, numbers, underscore
             let rawName = (profile.username || profile.displayName || 'github_user').toLowerCase();
             let username = rawName.replace(/[^a-z0-9_]/g, '_');
             while (username.length < 3) username += '_';
             username = username.substring(0, 20);
 
-            // Guarantee uniqueness
-
-
+            // Ensure username is unique
             let finalUsername = username;
-            let i = 1;
+            let counter = 1;
             while (await User.findOne({ username: finalUsername })) {
-                finalUsername = `${username}_${i++}`.substring(0, 20);
+                finalUsername = `${username}_${counter++}`.substring(0, 20);
             }
 
             user = await User.create({
@@ -93,361 +84,259 @@ async (accessToken, refreshToken, profile, done) => {
                 username: finalUsername,
                 profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg'
             });
-            console.log(`GitHub New user registration: ${finalUsername}`);
+
+            console.log(`New GitHub user registered: ${finalUsername}`);
         }
 
         return done(null, user);
     } catch (err) {
-        console.error('GitHub login error:', err);
+        console.error('GitHub authentication error:', err);
         return done(err);
     }
 }));
 
+// ===== Authentication Middleware =====
 function isAuthenticated(req, res, next) {
-    if (req.session.userId || req.isAuthenticated()) next();
-    else res.redirect('/login');
+    if (req.session.userId || req.isAuthenticated()) return next();
+    res.redirect('/login');
 }
 
-app.get('/', (req, res) => req.isAuthenticated() ? res.redirect('/home') : res.redirect('/login'));
-app.get('/login', (req, res) => res.render('login', { message: req.query.message || null }));
-app.get('/register', (req, res) => res.render('register', { message: null }));
+// ===== Routes =====
 
-//Github login
-app.get('/auth/github', 
-    passport.authenticate('github', { scope: ['user:email'] })
-);
+app.get('/', (req, res) => {
+    req.isAuthenticated() ? res.redirect('/home') : res.redirect('/login');
+});
+
+app.get('/login', (req, res) => {
+    res.render('login', { message: req.query.message || null });
+});
+
+app.get('/register', (req, res) => {
+    res.render('register', { message: null });
+});
+
+// GitHub OAuth Login
+app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 app.get('/auth/github/callback',
-    passport.authenticate('github', { failureRedirect: '/login?message=GitHub登录失败' }),
+    passport.authenticate('github', { failureRedirect: '/login?message=GitHub login failed' }),
     (req, res) => {
         req.session.userId = req.user._id.toString();
         req.session.username = req.user.username;
         req.session.profileImage = req.user.profileImage;
-        console.log(`GitHub The user logged in successfully: ${req.user.username}`);
+        console.log(`GitHub login successful: ${req.user.username}`);
         res.redirect('/home');
     }
 );
-// ===== 8.  POST /api/users/login =====
+
+// Local Login
 app.post('/api/users/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Validation
         if (!username || !password) {
-            return res.render('login', {
-                message: '❌ Please enter your username and password'
-            });
+            return res.render('login', { message: 'Please enter both username and password' });
         }
 
-        // Query users from the database
         const user = await User.findOne({ username });
-
         if (!user) {
-            return res.render('login', {
-                message: '❌ The user name does not exist'
-            });
+            return res.render('login', { message: 'Username does not exist' });
         }
 
-        // Direct password comparison (unencrypted)
         if (password !== user.password) {
-            return res.render('login', {
-                message: '❌ 密码错误'
-            });
+            return res.render('login', { message: 'Incorrect password' });
         }
 
-        // Save the session (mark the user as logged in)
         req.session.userId = user._id.toString();
         req.session.username = user.username;
         req.session.profileImage = user.profileImage;
 
-        console.log(`✅ The user logged in successfully: ${username}`);
-        return res.redirect('/home');
+        console.log(`Local login successful: ${username}`);
+        res.redirect('/home');
     } catch (error) {
-        console.error('❌ login error:', error);
-        res.render('login', {
-            message: '❌ Login failed. Please try again'
-        });
+        console.error('Login error:', error);
+        res.render('login', { message: 'Login failed. Please try again.' });
     }
 });
 
-// ===== 9.  POST /api/users/register =====
+// Local Register
 app.post('/api/users/register', async (req, res) => {
     try {
         const { username, password, passwordConfirm } = req.body;
 
-        // Input Validation
         if (!username || !password || !passwordConfirm) {
-            return res.render('register', {
-                message: '❌ Please fill in all the fields'
-            });
+            return res.render('register', { message: 'All fields are required' });
         }
 
         if (password !== passwordConfirm) {
-            return res.render('register', {
-                message: '❌ Password does not match'
-            });
+            return res.render('register', { message: 'Passwords do not match' });
         }
 
-        // Check whether the user name already exists
-        const userExists = await User.findOne({ username });
-        if (userExists) {
-            return res.render('register', {
-                message: '❌ The username already exists'
-            });
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.render('register', { message: 'Username already taken' });
         }
 
-        // Create a new user (store the password in plain text)
-        const newUser = await User.create({
+        await User.create({
             username,
-            password: password,
+            password,
             profileImage: '/images/default-avatar.jpg',
             followerCount: 0,
             followingCount: 0,
             postCount: 0
         });
 
-        console.log(`✅ The user has registered successfully.: ${username}`);
-        return res.render('register', {
-            message: '✅ Registration successful! Please return to log in'
-        });
-
+        console.log(`User registered successfully: ${username}`);
+        res.render('register', { message: 'Registration successful! Please log in.' });
     } catch (error) {
-        console.error('❌ registration error:', error);
-        res.render('register', {
-            message: '❌ Registration failed. Please try again'
-        });
+        console.error('Registration error:', error);
+        res.render('register', { message: 'Registration failed. Please try again.' });
     }
 });
 
-// ===== 10.  GET /home =====
-
+// Home Feed
 app.get('/home', isAuthenticated, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        // Get the total number of posts
         const totalPosts = await Post.countDocuments();
         const totalPages = Math.ceil(totalPosts / limit);
 
-        // Obtain the list of posts and populate the user information
         const posts = await Post.find()
             .populate('userId', 'username profileImage')
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
 
-        // ✅ Filter out posts with userId null (the user has been deleted)
         const validPosts = posts.filter(post => post.userId !== null);
 
-        // Obtain the current user information
         const currentUser = await User.findById(req.session.userId || req.user._id);
-        
-        // Null check
         if (!currentUser) {
-            console.log('⚠️ The user does not exist. Clear the session');
             req.session.destroy();
-            return res.redirect('/login?message=Please log in again');
+            return res.redirect('/login?message=Session expired. Please log in again.');
         }
 
-        console.log(`📖 用户 ${currentUser.username} 查看首页 - 顯示 ${validPosts.length} 個有效帖子`);
-        
+        console.log(`${currentUser.username} viewed home feed – ${validPosts.length} posts loaded`);
+
         res.render('home', {
-            posts: validPosts,  // 使用過濾後的帖子
+            posts: validPosts,
             currentPage: page,
-            totalPages: totalPages,
+            totalPages,
             user: currentUser,
             message: null
         });
     } catch (error) {
-        console.error('❌ 获取首页错误:', error);
-        res.status(500).render('error', {
-            error: '❌ 加载首页失败',
-            statusCode: 500
-        });
+        console.error('Home page error:', error);
+        res.status(500).render('error', { error: 'Failed to load home page', statusCode: 500 });
     }
 });
 
-// ===== 11. 路由：发布页面 GET /publish =====
+// Publish Page
 app.get('/publish', isAuthenticated, async (req, res) => {
     try {
         const user = await User.findById(req.session.userId || req.user._id);
-        // ✅ Null 检查
         if (!user) {
-            console.log('⚠️ 用户不存在，清除 session');
             req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
+            return res.redirect('/login?message=Please log in again');
         }
-
-        res.render('publish', { 
-            user: user,
-            message: null
-        });
+        res.render('publish', { user, message: null });
     } catch (error) {
-        console.error('❌ 获取发布页错误:', error);
-        res.render('error', {
-            error: '加载发布页失败',
-            statusCode: 500
-        });
+        console.error('Publish page error:', error);
+        res.status(500).render('error', { error: 'Failed to load publish page', statusCode: 500 });
     }
 });
 
-// ===== 12. 路由：发布帖子 POST /api/posts =====
+// Create Post
 app.post('/api/posts', isAuthenticated, async (req, res) => {
     try {
         const { imageUrls, content, tags } = req.body;
 
-        // 验证输入
         if (!imageUrls || !content) {
-            return res.status(400).json({
-                success: false,
-                message: '❌ 请输入图片URL和内容'
-            });
+            return res.status(400).json({ success: false, message: 'Image URLs and content are required' });
         }
 
-        // 处理图片 URL
-        const images = imageUrls.split('\n')
-            .map(url => url.trim())
-            .filter(url => url !== '');
-
+        const images = imageUrls.split('\n').map(url => url.trim()).filter(url => url);
         if (images.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: '❌ 请至少输入一个图片URL'
-            });
+            return res.status(400).json({ success: false, message: 'At least one image URL is required' });
         }
 
-        // 处理标签
-        const tagArray = tags ? tags.split(/\s+/).filter(tag => tag !== '') : [];
+        const tagArray = tags ? tags.split(/\s+/).filter(t => t) : [];
 
-        // 创建新帖子
         const newPost = await Post.create({
             userId: req.session.userId || req.user._id,
-            images: images,
-            content: content,
+            images,
+            content,
             tags: tagArray,
             likeCount: 0
         });
 
-        // 更新用户的 postCount
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
-            $inc: { postCount: 1 }
-        });
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { postCount: 1 } });
 
-        console.log(`✅ 帖子发布成功`);
-
-        return res.json({
-            success: true,
-            message: '✅ 帖子发布成功',
-            postId: newPost._id
-        });
-
+        console.log('Post created successfully');
+        res.json({ success: true, message: 'Post published successfully', postId: newPost._id });
     } catch (error) {
-        console.error('❌ 发布帖子错误:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ 发布失败，请重试',
-            error: error.message
-        });
+        console.error('Post creation error:', error);
+        res.status(500).json({ success: false, message: 'Failed to publish post' });
     }
 });
 
-// ===== 13. 路由：帖子详情 GET /posts/:id =====
+// Post Detail
 app.get('/posts/:id', isAuthenticated, async (req, res) => {
     try {
-        const { id } = req.params;
+        const post = await Post.findById(req.params.id).populate('userId', 'username profileImage');
+        if (!post) return res.status(404).render('error', { error: 'Post not found', statusCode: 404 });
 
-        // 获取帖子
-        const post = await Post.findById(id)
-            .populate('userId', 'username profileImage');
-
-        if (!post) {
-            return res.status(404).render('error', {
-                error: '❌ 帖子不存在',
-                statusCode: 404
-            });
-        }
-
-        // 获取评论
-        const comments = await Comment.find({ postId: id })
-            .populate('userId', 'username profileImage');
-
-        // 获取当前用户信息
+        const comments = await Comment.find({ postId: req.params.id }).populate('userId', 'username profileImage');
         const currentUser = await User.findById(req.session.userId || req.user._id);
 
-	// ✅ Null 检查
         if (!currentUser) {
-            console.log('⚠️ 用户不存在，清除 session');
             req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
+            return res.redirect('/login?message=Please log in again');
         }
 
-        // 检查是否为帖子所有者
         const isOwner = post.userId._id.toString() === (req.session.userId || req.user._id.toString());
 
-        console.log(`📝 用户查看帖子: ${post._id}`);
-
         res.render('post-detail', {
-            post: post,
-            comments: comments,
+            post,
+            comments,
             user: currentUser,
-            isOwner: isOwner,
+            isOwner,
             message: null
         });
-
     } catch (error) {
-        console.error('❌ 获取帖子详情错误:', error);
-        res.status(500).render('error', {
-            error: '❌ 加载帖子失败',
-            statusCode: 500
-        });
+        console.error('Post detail error:', error);
+        res.status(500).render('error', { error: 'Failed to load post', statusCode: 500 });
     }
 });
 
-// ===== 14. 路由：个人资料页 GET /profile =====
+// Profile Page
 app.get('/profile', isAuthenticated, async (req, res) => {
     try {
         const currentUser = await User.findById(req.session.userId || req.user._id);
-
-	// ✅ Null 检查
         if (!currentUser) {
-            console.log('⚠️ 用户不存在，清除 session');
             req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
+            return res.redirect('/login?message=Please log in again');
         }
 
-        // 获取用户的帖子
-        const userPosts = await Post.find({ userId: req.session.userId || req.user._id });
+        const userPosts = await Post.find({ userId: currentUser._id }).sort({ _id: -1 });
 
-        console.log(`👤 用户查看个人资料: ${currentUser.username}`);
-
-        res.render('profile', {
-            user: currentUser,
-            userPosts: userPosts,
-            message: null
-        });
-
+        res.render('profile', { user: currentUser, userPosts, message: null });
     } catch (error) {
-        console.error('❌ 获取个人资料错误:', error);
-        res.status(500).render('error', {
-            error: '❌ 加载资料失败',
-            statusCode: 500
-        });
+        console.error('Profile page error:', error);
+        res.status(500).render('error', { error: 'Failed to load profile', statusCode: 500 });
     }
 });
 
-// ===== 15. 路由：搜索页面 GET /search =====
+// Search
 app.get('/search', isAuthenticated, async (req, res) => {
     try {
         const { q } = req.query;
         const currentUser = await User.findById(req.session.userId || req.user._id);
-
-	 // ✅ Null 检查
         if (!currentUser) {
-            console.log('⚠️ 用户不存在，清除 session');
             req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
+            return res.redirect('/login?message=Please log in again');
         }
 
         if (!q) {
@@ -461,662 +350,323 @@ app.get('/search', isAuthenticated, async (req, res) => {
             });
         }
 
-        // 檢查是否是標籤搜索（以#開頭）
         const isHashtag = q.startsWith('#');
-        const searchQuery = isHashtag ? q.substring(1) : q;
+        const query = isHashtag ? q.substring(1) : q;
 
         if (isHashtag) {
-            // 標籤模糊搜索
-            const posts = await Post.find({ 
-                tags: { $regex: searchQuery, $options: 'i' } 
-            })
-            .populate('userId', 'username profileImage')
-            .sort({ _id: -1 });
+            const posts = await Post.find({ tags: { $regex: query, $options: 'i' } })
+                .populate('userId', 'username profileImage')
+                .sort({ _id: -1 });
 
-            console.log(`🏷️ 搜索標籤: ${searchQuery}，找到 ${posts.length} 個帖子`);
-            
             res.render('search-result', {
                 searchType: 'tag',
-                searchQuery: searchQuery,
+                searchQuery: query,
                 users: [],
-                posts: posts,
+                posts,
                 user: currentUser,
                 message: null
             });
         } else {
-            // 用戶名模糊搜索
-            const users = await User.find({
-                username: { $regex: searchQuery, $options: 'i' }
-            });
+            const users = await User.find({ username: { $regex: query, $options: 'i' } });
+            const posts = await Post.find({ content: { $regex: query, $options: 'i' } })
+                .populate('userId', 'username profileImage')
+                .sort({ _id: -1 });
 
-            // 同時搜索帖子內容（模糊搜索）
-            const posts = await Post.find({
-                content: { $regex: searchQuery, $options: 'i' }
-            })
-            .populate('userId', 'username profileImage')
-            .sort({ _id: -1 });
-
-            console.log(`🔍 搜索用戶: ${searchQuery}，找到 ${users.length} 個用戶和 ${posts.length} 個帖子`);
-            
             res.render('search-result', {
                 searchType: 'user',
-                searchQuery: searchQuery,
-                users: users,
-                posts: posts,
+                searchQuery: query,
+                users,
+                posts,
                 user: currentUser,
                 message: null
             });
         }
     } catch (error) {
-        console.error('❌ 搜索錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 搜索失敗',
-            statusCode: 500
-        });
+        console.error('Search error:', error);
+        res.status(500).render('error', { error: 'Search failed', statusCode: 500 });
     }
 });
 
-// ===== 16. 路由：添加评论 POST /api/posts/:id/comments =====
+// Add Comment
 app.post('/api/posts/:id/comments', isAuthenticated, async (req, res) => {
     try {
-        const { id } = req.params;
         const { content } = req.body;
-
-        if (!content || content.trim() === '') {
-            return res.status(400).json({
-                success: false,
-                message: '❌ 评论不能为空'
-            });
+        if (!content?.trim()) {
+            return res.status(400).json({ success: false, message: 'Comment cannot be empty' });
         }
 
-        // 创建评论
-        const newComment = await Comment.create({
-            postId: id,
+        const comment = await Comment.create({
+            postId: req.params.id,
             userId: req.session.userId || req.user._id,
             content: content.trim()
         });
 
-        console.log(`💬 评论已添加`);
-
-        return res.json({
-            success: true,
-            message: '✅ 评论成功',
-            comment: newComment
-        });
-
+        console.log('Comment added');
+        res.json({ success: true, message: 'Comment posted', comment });
     } catch (error) {
-        console.error('❌ 添加评论错误:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ 评论失败',
-            error: error.message
-        });
+        console.error('Comment error:', error);
+        res.status(500).json({ success: false, message: 'Failed to post comment' });
     }
 });
 
-// ===== 17. 路由：点赞帖子 POST /api/posts/:id/like =====
+// Like Post
 app.post('/api/posts/:id/like', isAuthenticated, async (req, res) => {
     try {
-        const { id } = req.params;
-
-        // 增加点赞数
         const post = await Post.findByIdAndUpdate(
-            id,
+            req.params.id,
             { $inc: { likeCount: 1 } },
             { new: true }
         );
 
-        console.log(`❤️ 帖子被点赞`);
-
-        return res.json({
-            success: true,
-            message: '✅ 点赞成功',
-            likeCount: post.likeCount
-        });
-
+        console.log('Post liked');
+        res.json({ success: true, message: 'Liked', likeCount: post.likeCount });
     } catch (error) {
-        console.error('❌ 点赞错误:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ 点赞失败',
-            error: error.message
-        });
+        console.error('Like error:', error);
+        res.status(500).json({ success: false, message: 'Like failed' });
     }
 });
 
-// ===== 18. 路由：删除帖子 DELETE /api/posts/:id =====
+// Delete Post
 app.delete('/api/posts/:id', isAuthenticated, async (req, res) => {
     try {
-        const { id } = req.params;
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
 
-        // 查询帖子
-        const post = await Post.findById(id);
-
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ 帖子不存在'
-            });
-        }
-
-        // 检查是否为帖子所有者
         if (post.userId.toString() !== (req.session.userId || req.user._id.toString())) {
-            return res.status(403).json({
-                success: false,
-                message: '❌ 没有权限删除此帖子'
-            });
+            return res.status(403).json({ success: false, message: 'Not authorized to delete this post' });
         }
 
-        // 删除帖子
-        await Post.findByIdAndDelete(id);
+        await Post.findByIdAndDelete(req.params.id);
+        await Comment.deleteMany({ postId: req.params.id });
+        await User.findByIdAndUpdate(post.userId, { $inc: { postCount: -1 } });
 
-        // 删除相关评论
-        await Comment.deleteMany({ postId: id });
-
-        // 更新用户的 postCount
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
-            $inc: { postCount: -1 }
-        });
-
-        console.log(`🗑️ 帖子已删除`);
-
-        return res.json({
-            success: true,
-            message: '✅ 帖子已删除'
-        });
-
+        console.log('Post deleted');
+        res.json({ success: true, message: 'Post deleted successfully' });
     } catch (error) {
-        console.error('❌ 删除帖子错误:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ 删除失败',
-            error: error.message
-        });
+        console.error('Delete post error:', error);
+        res.status(500).json({ success: false, message: 'Delete failed' });
     }
 });
 
-// ===== 19. 路由：登出 POST /logout =====
+// Logout
 app.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
+    req.session.destroy(err => {
         if (err) {
-            return res.status(500).json({
-                success: false,
-                message: '❌ 登出失败'
-            });
+            return res.status(500).json({ success: false, message: 'Logout failed' });
         }
-        console.log('✅ 用户已登出');
+        console.log('User logged out successfully');
         res.redirect('/login');
     });
 });
 
-// ===== 20. 路由：查看其他用戶資料 GET /users/:id =====
+// View Other User's Profile
 app.get('/users/:id', isAuthenticated, async (req, res) => {
     try {
-        const { id } = req.params;
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-
-        // Null 檢查
-        if (!currentUser) {
-            console.log('⚠️ 用戶不存在，清除 session');
-            req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
-        }
-
-        // 如果是查看自己的資料，重定向到 /profile
-        if (id === (req.session.userId || req.user._id.toString())) {
+        if (req.params.id === (req.session.userId || req.user._id.toString())) {
             return res.redirect('/profile');
         }
 
-        // 查詢被查看的用戶
-        const viewedUser = await User.findById(id);
-        if (!viewedUser) {
-            return res.status(404).render('error', {
-                error: '❌ 用戶不存在',
-                statusCode: 404
-            });
+        const viewedUser = await User.findById(req.params.id);
+        if (!viewedUser) return res.status(404).render('error', { error: 'User not found', statusCode: 404 });
+
+        const currentUser = await User.findById(req.session.userId || req.user._id);
+        if (!currentUser) {
+            req.session.destroy();
+            return res.redirect('/login');
         }
 
-        // 查詢被查看用戶的帖子
-        const userPosts = await Post.find({ userId: id }).sort({ _id: -1 });
+        const userPosts = await Post.find({ userId: req.params.id }).sort({ _id: -1 });
+        const follow = await Follow.findOne({ follower: currentUser._id, followee: req.params.id });
+        const isFollowing = !!follow;
 
-        // 檢查當前用戶是否已關注該用戶
-        const followRelation = await Follow.findOne({
-            follower: req.session.userId || req.user._id,
-            followee: id
-        });
-        const isFollowing = !!followRelation;
-
-        console.log(`👤 用戶 ${currentUser.username} 查看 ${viewedUser.username} 的資料`);
-        
         res.render('user-profile', {
             user: currentUser,
-            viewedUser: viewedUser,
-            userPosts: userPosts,
-            isFollowing: isFollowing,
+            viewedUser,
+            userPosts,
+            isFollowing,
             message: null
         });
     } catch (error) {
-        console.error('❌ 獲取用戶資料錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 加載資料失敗',
-            statusCode: 500
-        });
+        console.error('User profile error:', error);
+        res.status(500).render('error', { error: 'Failed to load profile', statusCode: 500 });
     }
 });
 
-// ===== 21. 路由：关注用户 POST /api/users/:id/follow =====
+// Follow User
 app.post('/api/users/:id/follow', isAuthenticated, async (req, res) => {
     try {
         const followeeId = req.params.id;
         const followerId = req.session.userId || req.user._id;
 
-        console.log(`🔍 關注請求 - Follower: ${followerId}, Followee: ${followeeId}`);
-
-        // 檢查參數
-        if (!followeeId || !followerId) {
-            return res.json({
-                success: false,
-                message: '❌ 缺少必要參數'
-            });
-        }
-
-        // 不能關注自己
         if (followeeId === followerId) {
-            return res.json({
-                success: false,
-                message: '❌ 不能關注自己'
-            });
+            return res.json({ success: false, message: "You can't follow yourself" });
         }
 
-        // 檢查被關注用戶是否存在
-        const followeeUser = await User.findById(followeeId);
-        if (!followeeUser) {
-            return res.json({
-                success: false,
-                message: '❌ 用戶不存在'
-            });
+        const existing = await Follow.findOne({ follower: followerId, followee: followeeId });
+        if (existing) {
+            return res.json({ success: false, message: 'You are already following this user' });
         }
 
-        // 檢查是否已經關注
-        const existingFollow = await Follow.findOne({
-            follower: followerId,
-            followee: followeeId
-        });
-
-        if (existingFollow) {
-            return res.json({
-                success: false,
-                message: '❌ 已經關注過了'
-            });
-        }
-
-        // 創建關注關係
-        const newFollow = await Follow.create({
-            follower: followerId,
-            followee: followeeId
-        });
-
-        console.log(`✅ 關注關係已創建: ${newFollow._id}`);
-
-        // 更新計數
+        await Follow.create({ follower: followerId, followee: followeeId });
         await User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } });
         await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: 1 } });
 
-        console.log(`✅ 關注成功`);
-
-        res.json({
-            success: true,
-            message: '✅ 關注成功'
-        });
+        console.log(`User ${followerId} followed ${followeeId}`);
+        res.json({ success: true, message: 'Followed successfully' });
     } catch (error) {
-        console.error('❌ 關注錯誤 (詳細):', error);
-        console.error('錯誤類型:', error.name);
-        console.error('錯誤訊息:', error.message);
-        
-        // 特別處理 E11000 錯誤
-        if (error.code === 11000) {
-            return res.json({
-                success: false,
-                message: '❌ 已經關注過了（數據庫約束）'
-            });
-        }
-        
-        res.status(500).json({
-            success: false,
-            message: '❌ 關注失敗: ' + error.message
-        });
+        console.error('Follow error:', error);
+        res.status(500).json({ success: false, message: 'Follow failed' });
     }
 });
 
-
-// ===== 22. 路由：取消關注用戶 POST /api/users/:id/unfollow =====
+// Unfollow User
 app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
     try {
-        const followeeId = req.params.id;
-
-        // 刪除關注關係
         const result = await Follow.findOneAndDelete({
             follower: req.session.userId || req.user._id,
-            followee: followeeId
+            followee: req.params.id
         });
 
         if (!result) {
-            return res.json({
-                success: false,
-                message: '❌ 你沒有關注這個用戶'
-            });
+            return res.json({ success: false, message: "You are not following this user" });
         }
 
-        // 更新計數
         await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
-        await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: -1 } });
+        await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
 
-        console.log(`✅ 取消關注成功`);
-        res.json({
-            success: true,
-            message: '✅ 已取消關注'
-        });
+        console.log('Unfollowed successfully');
+        res.json({ success: true, message: 'Unfollowed' });
     } catch (error) {
-        console.error('❌ 取消關注錯誤:', error);
-        res.json({
-            success: false,
-            message: '❌ 操作失敗'
-        });
+        console.error('Unfollow error:', error);
+        res.json({ success: false, message: 'Unfollow failed' });
     }
 });
 
-
-// ===== 22. 路由：設置頁面 GET /settings =====
+// Settings Page
 app.get('/settings', isAuthenticated, async (req, res) => {
-    try {
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        console.log(`⚙️ 用戶 ${currentUser.username} 查看設置頁面`);
-        
-        res.render('settings', {
-            user: currentUser,
-            message: null
-        });
-    } catch (error) {
-        console.error('❌ 獲取設置頁錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 加載設置頁失敗',
-            statusCode: 500
-        });
-    }
+    const user = await User.findById(req.session.userId || req.user._id);
+    res.render('settings', { user, message: null });
 });
 
-// ===== 23. 路由：更新頭像 POST /settings/update-avatar =====
+// Update Avatar
 app.post('/settings/update-avatar', isAuthenticated, async (req, res) => {
     try {
         const { avatarUrl } = req.body;
-        
-        if (!avatarUrl || avatarUrl.trim() === '') {
-            const currentUser = await User.findById(req.session.userId || req.user._id);
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 請提供頭像網址' }
-            });
+        if (!avatarUrl?.trim()) {
+            const user = await User.findById(req.session.userId || req.user._id);
+            return res.render('settings', { user, message: { type: 'error', text: 'Please provide an avatar URL' } });
         }
 
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
-            profileImage: avatarUrl
-        });
-
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { profileImage: avatarUrl });
         req.session.profileImage = avatarUrl;
-        console.log(`✅ 用戶更新了頭像`);
-        
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'success', text: '✅ 頭像更新成功！' }
-        });
+
+        const updatedUser = await User.findById(req.session.userId || req.user._id);
+        res.render('settings', { user: updatedUser, message: { type: 'success', text: 'Avatar updated!' } });
     } catch (error) {
-        console.error('❌ 更新頭像錯誤:', error);
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'error', text: '❌ 更新失敗，請重試' }
-        });
+        const user = await User.findById(req.session.userId || req.user._id);
+        res.render('settings', { user, message: { type: 'error', text: 'Update failed' } });
     }
 });
 
-// ===== 24. 路由：更新用戶名 POST /settings/update-username =====
+// Update Username
 app.post('/settings/update-username', isAuthenticated, async (req, res) => {
     try {
         const { newUsername } = req.body;
-        
         if (!newUsername || newUsername.trim().length < 3) {
-            const currentUser = await User.findById(req.session.userId || req.user._id);
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 用戶名至少需要 3 個字符' }
-            });
+            const user = await User.findById(req.session.userId || req.user._id);
+            return res.render('settings', { user, message: { type: 'error', text: 'Username must be at least 3 characters' } });
         }
 
-        // 檢查用戶名是否已存在
-        const existingUser = await User.findOne({ username: newUsername });
-        if (existingUser && existingUser._id.toString() !== (req.session.userId || req.user._id.toString())) {
-            const currentUser = await User.findById(req.session.userId || req.user._id);
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 用戶名已被使用' }
-            });
+        const taken = await User.findOne({ username: newUsername });
+        if (taken && taken._id.toString() !== (req.session.userId || req.user._id.toString())) {
+            const user = await User.findById(req.session.userId || req.user._id);
+            return res.render('settings', { user, message: { type: 'error', text: 'Username already taken' } });
         }
 
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, {
-            username: newUsername
-        });
-
+        await User.findByIdAndUpdate(req.session.userId || req.user._id, { username: newUsername });
         req.session.username = newUsername;
-        console.log(`✅ 用戶名更新為: ${newUsername}`);
-        
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'success', text: '✅ 用戶名更新成功！' }
-        });
+
+        const updatedUser = await User.findById(req.session.userId || req.user._id);
+        res.render('settings', { user: updatedUser, message: { type: 'success', text: 'Username updated!' } });
     } catch (error) {
-        console.error('❌ 更新用戶名錯誤:', error);
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'error', text: '❌ 更新失敗，請重試' }
-        });
+        const user = await User.findById(req.session.userId || req.user._id);
+        res.render('settings', { user, message: { type: 'error', text: 'Update failed' } });
     }
 });
 
-// ===== 25. 路由：更新密碼 POST /settings/update-password =====
+// Update Password
 app.post('/settings/update-password', isAuthenticated, async (req, res) => {
     try {
         const { currentPassword, newPassword, confirmPassword } = req.body;
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        
-        // 驗證輸入
+        const user = await User.findById(req.session.userId || req.user._id);
+
         if (!currentPassword || !newPassword || !confirmPassword) {
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 請填寫所有欄位' }
-            });
+            return res.render('settings', { user, message: { type: 'error', text: 'All fields are required' } });
         }
-
-        // 驗證當前密碼
-        if (currentPassword !== currentUser.password) {
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 當前密碼錯誤' }
-            });
+        if (currentPassword !== user.password) {
+            return res.render('settings', { user, message: { type: 'error', text: 'Current password is incorrect' } });
         }
-
-        // 驗證新密碼
         if (newPassword.length < 6) {
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 新密碼至少需要 6 個字符' }
-            });
+            return res.render('settings', { user, message: { type: 'error', text: 'New password must be at least 6 characters' } });
         }
-
         if (newPassword !== confirmPassword) {
-            return res.render('settings', {
-                user: currentUser,
-                message: { type: 'error', text: '❌ 兩次輸入的新密碼不一致' }
-            });
+            return res.render('settings', { user, message: { type: 'error', text: 'Passwords do not match' } });
         }
 
-        // 更新密碼
-        currentUser.password = newPassword;
-        await currentUser.save();
+        user.password = newPassword;
+        await user.save();
 
-        console.log(`✅ 用戶 ${currentUser.username} 更新了密碼`);
-        
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'success', text: '✅ 密碼更新成功！' }
-        });
+        res.render('settings', { user, message: { type: 'success', text: 'Password updated successfully!' } });
     } catch (error) {
-        console.error('❌ 更新密碼錯誤:', error);
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        res.render('settings', {
-            user: currentUser,
-            message: { type: 'error', text: '❌ 更新失敗，請重試' }
-        });
+        const user = await User.findById(req.session.userId || req.user._id);
+        res.render('settings', { user, message: { type: 'error', text: 'Update failed' } });
     }
 });
 
-// ===== 26. 路由：Following List GET /following =====
+// Following List
 app.get('/following', isAuthenticated, async (req, res) => {
-    try {
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        
-        if (!currentUser) {
-            console.log('⚠️ 用戶不存在，清除 session');
-            req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
-        }
-        
-        // 查詢當前用戶關注的人（follower = 當前用戶）
-        const follows = await Follow.find({ follower: req.session.userId || req.user._id })
-            .populate('followee', 'username profileImage');
-        
-        const followingList = follows.map(f => ({
-            _id: f.followee._id,
-            username: f.followee.username,
-            profileImage: f.followee.profileImage
-        }));
+    const currentUser = await User.findById(req.session.userId || req.user._id);
+    const follows = await Follow.find({ follower: currentUser._id }).populate('followee', 'username profileImage');
+    const followingList = follows.map(f => f.followee);
 
-        console.log(`📋 用戶 ${currentUser.username} 查看 Following List`);
-        
-        res.render('following-list', {
-            user: currentUser,
-            followingList: followingList
-        });
-    } catch (error) {
-        console.error('❌ 獲取 Following List 錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 加載關注列表失敗',
-            statusCode: 500
-        });
-    }
+    res.render('following-list', { user: currentUser, followingList });
 });
 
-// ===== 27. 路由：Followers List GET /followers =====
+// Followers List
 app.get('/followers', isAuthenticated, async (req, res) => {
-    try {
-        const currentUser = await User.findById(req.session.userId || req.user._id);
-        
-        if (!currentUser) {
-            console.log('⚠️ 用戶不存在，清除 session');
-            req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
-        }
-        
-        // 查詢關注當前用戶的人（followee = 當前用戶）
-        const follows = await Follow.find({ followee: req.session.userId || req.user._id })
-            .populate('follower', 'username profileImage');
-        
-        const followersList = follows.map(f => ({
-            _id: f.follower._id,
-            username: f.follower.username,
-            profileImage: f.follower.profileImage
-        }));
+    const currentUser = await User.findById(req.session.userId || req.user._id);
+    const follows = await Follow.find({ followee: currentUser._id }).populate('follower', 'username profileImage');
+    const followersList = follows.map(f => f.follower);
 
-        console.log(`📋 用戶 ${currentUser.username} 查看 Followers List`);
-        
-        res.render('followers-list', {
-            user: currentUser,
-            followersList: followersList
-        });
-    } catch (error) {
-        console.error('❌ 獲取 Followers List 錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 加載粉絲列表失敗',
-            statusCode: 500
-        });
-    }
+    res.render('followers-list', { user: currentUser, followersList });
 });
 
-
-
-// ===== 28. 路由：取消關注 POST /following/:id/unfollow =====
+// Remove from Following / Followers
 app.post('/following/:id/unfollow', isAuthenticated, async (req, res) => {
-    try {
-        const followeeId = req.params.id;
-        
-        await Follow.findOneAndDelete({
-            follower: req.session.userId || req.user._id,
-            followee: followeeId
-        });
-
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
-        await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: -1 } });
-
-        console.log(`✅ 從 Following List 取消關注成功`);
-        res.redirect('/following');
-    } catch (error) {
-        console.error('❌ 取消關注錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 操作失敗',
-            statusCode: 500
-        });
-    }
+    await Follow.findOneAndDelete({ follower: req.session.userId || req.user._id, followee: req.params.id });
+    await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
+    await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
+    res.redirect('/following');
 });
 
-
-// ===== 29. 路由：移除粉絲 POST /followers/:id/remove =====
 app.post('/followers/:id/remove', isAuthenticated, async (req, res) => {
-    try {
-        const followerId = req.params.id;
-        
-        await Follow.findOneAndDelete({
-            follower: followerId,
-            followee: req.session.userId || req.user._id
-        });
-
-        await User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } });
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followerCount: -1 } });
-
-        console.log(`✅ 移除粉絲成功`);
-        res.redirect('/followers');
-    } catch (error) {
-        console.error('❌ 移除粉絲錯誤:', error);
-        res.status(500).render('error', {
-            error: '❌ 操作失敗',
-            statusCode: 500
-        });
-    }
+    await Follow.findOneAndDelete({ follower: req.params.id, followee: req.session.userId || req.user._id });
+    await User.findByIdAndUpdate(req.params.id, { $inc: { followingCount: -1 } });
+    await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followerCount: -1 } });
+    res.redirect('/followers');
 });
-// ===== 30. 404 错误处理 =====
+
+// 404 Page
 app.use((req, res) => {
     res.status(404).render('error', {
-        error: '❌ 页面不存在 (404)',
+        error: 'Page Not Found (404)',
         statusCode: 404
     });
 });
 
-// ===== 31. 启动服务器 =====
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`\n🚀 服务器运行在 http://localhost:${PORT}`);
-    console.log(`📍 访问 http://localhost:${PORT}/login 开始使用\n`);
+    console.log(`\nServer is running at http://localhost:${PORT}`);
+    console.log(`Open http://localhost:${PORT}/login to start\n`);
 });
-
-
