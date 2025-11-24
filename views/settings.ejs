@@ -135,11 +135,11 @@
         
         <div class="content">
             <div class="settings-container">
-                <a href="/profile" class="btn-back">← 返回個人資料</a>
+                <a href="/profile" class="btn-back">← Return Personal Information</a>
 
                 <div class="settings-header">
-                    <h1>⚙️ 帳戶設置</h1>
-                    <p style="color: #8e8e8e;">管理你的個人資料和帳戶設置</p>
+                    <h1>⚙️ account setting</h1>
+                    <p style="color: #8e8e8e;">Manage your personal profile and account Settings</p>
                 </div>
 
                 <% if (message) { %>
@@ -149,13 +149,13 @@
                 <% } %>
 
                 <div class="settings-sections">
-                    <!-- 更新頭像 -->
+                    <!-- Update the avatar -->
                     <div class="settings-card">
-                        <h2>🖼️ 更新頭像</h2>
+                        <h2>🖼️ Update the avatar</h2>
                         <img src="<%= user.profileImage %>" class="current-avatar" alt="當前頭像">
                         <form action="/settings/update-avatar" method="POST">
                             <div class="form-group">
-                                <label for="avatarUrl">新頭像網址：</label>
+                                <label for="avatarUrl">New avatar URL：</label>
                                 <input 
                                     type="url" 
                                     id="avatarUrl" 
@@ -164,69 +164,69 @@
                                     required
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">更新頭像</button>
+                            <button type="submit" class="btn-submit">Update the avatar</button>
                         </form>
                     </div>
 
-                    <!-- 更新用戶名 -->
+                    <!-- Update the user name -->
                     <div class="settings-card">
-                        <h2>✏️ 更新用戶名</h2>
+                        <h2>✏️ Update the user name</h2>
                         <form action="/settings/update-username" method="POST">
                             <div class="form-group">
-                                <label for="newUsername">當前用戶名：<strong><%= user.username %></strong></label>
+                                <label for="newUsername">current user name：<strong><%= user.username %></strong></label>
                             </div>
                             <div class="form-group">
-                                <label for="newUsername">新用戶名：</label>
+                                <label for="newUsername">New username：</label>
                                 <input 
                                     type="text" 
                                     id="newUsername" 
                                     name="newUsername" 
-                                    placeholder="輸入新用戶名" 
+                                    placeholder="Enter a new username" 
                                     required
                                     minlength="3"
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">更新用戶名</button>
+                            <button type="submit" class="btn-submit">Update the user name</button>
                         </form>
                     </div>
 
-                    <!-- 更新密碼 -->
+                    <!-- update password -->
                     <div class="settings-card">
-                        <h2>🔒 更新密碼</h2>
+                        <h2>🔒 update password</h2>
                         <form action="/settings/update-password" method="POST">
                             <div class="form-group">
-                                <label for="currentPassword">當前密碼：</label>
+                                <label for="currentPassword">Current Password：</label>
                                 <input 
                                     type="password" 
                                     id="currentPassword" 
                                     name="currentPassword" 
-                                    placeholder="輸入當前密碼" 
+                                    placeholder="Enter the current password" 
                                     required
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="newPassword">新密碼：</label>
+                                <label for="newPassword">new password：</label>
                                 <input 
                                     type="password" 
                                     id="newPassword" 
                                     name="newPassword" 
-                                    placeholder="輸入新密碼" 
+                                    placeholder="Enter the new password" 
                                     required
                                     minlength="6"
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="confirmPassword">確認新密碼：</label>
+                                <label for="confirmPassword">Enter the new password again：</label>
                                 <input 
                                     type="password" 
                                     id="confirmPassword" 
                                     name="confirmPassword" 
-                                    placeholder="再次輸入新密碼" 
+                                    placeholder="Enter the new password again" 
                                     required
                                     minlength="6"
                                 >
                             </div>
-                            <button type="submit" class="btn-submit">更新密碼</button>
+                            <button type="submit" class="btn-submit">update password</button>
                         </form>
                     </div>
                 </div>
