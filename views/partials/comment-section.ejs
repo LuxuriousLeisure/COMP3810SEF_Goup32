@@ -1,0 +1,47 @@
+<div class="comments-container">
+    <h3>💬 Comments (<%= comments ? comments.length : 0 %>)</h3>
+    
+    <% if (comments && comments.length > 0) { %>
+        <div class="comments-list">
+            <% comments.forEach((comment) => { %>
+                <div class="comment">
+                    <img src="<%= comment.userId.profileImage %>" class="small-avatar" alt="avatar">
+                    <div class="comment-content">
+                        <p class="username"><%= comment.userId.username %></p>
+                        <p class="text"><%= comment.content %></p>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    <% } %>
+    
+    <div class="comment-form">
+        <form onsubmit="addComment(event, '<%= postId %>')">
+            <textarea name="content" placeholder="Write a comment..." maxlength="500" required></textarea>
+            <button type="submit">Comment</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function addComment(event, postId) {
+        event.preventDefault();
+        const content = event.target.content.value;
+        
+        fetch(`/api/posts/${postId}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ Comment added');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => alert('Error: ' + err));
+    }
+</script>

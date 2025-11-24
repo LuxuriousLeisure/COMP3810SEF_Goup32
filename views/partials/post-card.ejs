@@ -1,0 +1,34 @@
+<div class="post-card">
+    <div class="post-header">
+        <% if (post.userId) { %>
+            <img src="<%= post.userId.profileImage || '/images/default-avatar.jpg' %>" class="avatar" alt="avatar">
+            <p class="username"><%= post.userId.username %></p>
+        <% } else { %>
+            <img src="/images/default-avatar.jpg" class="avatar" alt="avatar">
+            <p class="username">User removed</p>
+        <% } %>
+    </div>
+    
+    <% if (post.images && post.images.length > 0) { %>
+        <img src="<%= post.images[0] %>" class="post-image" alt="post">
+    <% } %>
+    
+    <div class="post-content">
+        <p><%= post.content %></p>
+        
+        <% if (post.tags && post.tags.length > 0) { %>
+            <div class="post-tags">
+                <% post.tags.forEach(tag => { %>
+                    <a href="/search?q=%23<%= tag %>" class="tag">#<%= tag %></a>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+    
+    <div class="post-footer">
+        <span>❤️ <%= post.likeCount || 0 %> likes</span>
+        <a href="/posts/<%= post._id %>">View details</a>
+    </div>
+</div>
+
+
