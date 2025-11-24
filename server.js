@@ -493,54 +493,54 @@ app.get('/users/:id', isAuthenticated, async (req, res) => {
 });
 
 // Follow User
-app.post('/api/users/:id/follow', isAuthenticated, async (req, res) => {
-    try {
-        const followeeId = req.params.id;
-        const followerId = req.session.userId || req.user._id;
+// app.post('/api/users/:id/follow', isAuthenticated, async (req, res) => {
+//     try {
+//         const followeeId = req.params.id;
+//         const followerId = req.session.userId || req.user._id;
 
-        if (followeeId === followerId) {
-            return res.json({ success: false, message: "You can't follow yourself" });
-        }
+//         if (followeeId === followerId) {
+//             return res.json({ success: false, message: "You can't follow yourself" });
+//         }
 
-        const existing = await Follow.findOne({ follower: followerId, followee: followeeId });
-        if (existing) {
-            return res.json({ success: false, message: 'You are already following this user' });
-        }
+//         const existing = await Follow.findOne({ follower: followerId, followee: followeeId });
+//         if (existing) {
+//             return res.json({ success: false, message: 'You are already following this user' });
+//         }
 
-        await Follow.create({ follower: followerId, followee: followeeId });
-        await User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } });
-        await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: 1 } });
+//         await Follow.create({ follower: followerId, followee: followeeId });
+//         await User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } });
+//         await User.findByIdAndUpdate(followeeId, { $inc: { followerCount: 1 } });
 
-        console.log(`User ${followerId} followed ${followeeId}`);
-        res.json({ success: true, message: 'Followed successfully' });
-    } catch (error) {
-        console.error('Follow error:', error);
-        res.status(500).json({ success: false, message: 'Follow failed' });
-    }
-});
+//         console.log(`User ${followerId} followed ${followeeId}`);
+//         res.json({ success: true, message: 'Followed successfully' });
+//     } catch (error) {
+//         console.error('Follow error:', error);
+//         res.status(500).json({ success: false, message: 'Follow failed' });
+//     }
+// });
 
 // Unfollow User
-app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
-    try {
-        const result = await Follow.findOneAndDelete({
-            follower: req.session.userId || req.user._id,
-            followee: req.params.id
-        });
+// app.post('/api/users/:id/unfollow', isAuthenticated, async (req, res) => {
+//     try {
+//         const result = await Follow.findOneAndDelete({
+//             follower: req.session.userId || req.user._id,
+//             followee: req.params.id
+//         });
 
-        if (!result) {
-            return res.json({ success: false, message: "You are not following this user" });
-        }
+//         if (!result) {
+//             return res.json({ success: false, message: "You are not following this user" });
+//         }
 
-        await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
-        await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
+//         await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
+//         await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
 
-        console.log('Unfollowed successfully');
-        res.json({ success: true, message: 'Unfollowed' });
-    } catch (error) {
-        console.error('Unfollow error:', error);
-        res.json({ success: false, message: 'Unfollow failed' });
-    }
-});
+//         console.log('Unfollowed successfully');
+//         res.json({ success: true, message: 'Unfollowed' });
+//     } catch (error) {
+//         console.error('Unfollow error:', error);
+//         res.json({ success: false, message: 'Unfollow failed' });
+//     }
+// });
 
 // Settings Page
 app.get('/settings', isAuthenticated, async (req, res) => {
@@ -624,45 +624,45 @@ app.post('/settings/update-password', isAuthenticated, async (req, res) => {
 });
 
 // Following List
-app.get('/following', isAuthenticated, async (req, res) => {
-    const currentUser = await User.findById(req.session.userId || req.user._id);
-    const follows = await Follow.find({ follower: currentUser._id }).populate('followee', 'username profileImage');
-    const followingList = follows.map(f => f.followee);
+// app.get('/following', isAuthenticated, async (req, res) => {
+//     const currentUser = await User.findById(req.session.userId || req.user._id);
+//     const follows = await Follow.find({ follower: currentUser._id }).populate('followee', 'username profileImage');
+//     const followingList = follows.map(f => f.followee);
 
-    res.render('following-list', { user: currentUser, followingList });
-});
+//     res.render('following-list', { user: currentUser, followingList });
+// });
 
 // Followers List
-app.get('/followers', isAuthenticated, async (req, res) => {
-    const currentUser = await User.findById(req.session.userId || req.user._id);
-    const follows = await Follow.find({ followee: currentUser._id }).populate('follower', 'username profileImage');
-    const followersList = follows.map(f => f.follower);
+// app.get('/followers', isAuthenticated, async (req, res) => {
+//     const currentUser = await User.findById(req.session.userId || req.user._id);
+//     const follows = await Follow.find({ followee: currentUser._id }).populate('follower', 'username profileImage');
+//     const followersList = follows.map(f => f.follower);
 
-    res.render('followers-list', { user: currentUser, followersList });
-});
+//     res.render('followers-list', { user: currentUser, followersList });
+// });
 
 // Remove from Following / Followers
-app.post('/following/:id/unfollow', isAuthenticated, async (req, res) => {
-    await Follow.findOneAndDelete({ follower: req.session.userId || req.user._id, followee: req.params.id });
-    await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
-    await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
-    res.redirect('/following');
-});
+// app.post('/following/:id/unfollow', isAuthenticated, async (req, res) => {
+//     await Follow.findOneAndDelete({ follower: req.session.userId || req.user._id, followee: req.params.id });
+//     await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followingCount: -1 } });
+//     await User.findByIdAndUpdate(req.params.id, { $inc: { followerCount: -1 } });
+//     res.redirect('/following');
+// });
 
-app.post('/followers/:id/remove', isAuthenticated, async (req, res) => {
-    await Follow.findOneAndDelete({ follower: req.params.id, followee: req.session.userId || req.user._id });
-    await User.findByIdAndUpdate(req.params.id, { $inc: { followingCount: -1 } });
-    await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followerCount: -1 } });
-    res.redirect('/followers');
-});
+// app.post('/followers/:id/remove', isAuthenticated, async (req, res) => {
+//     await Follow.findOneAndDelete({ follower: req.params.id, followee: req.session.userId || req.user._id });
+//     await User.findByIdAndUpdate(req.params.id, { $inc: { followingCount: -1 } });
+//     await User.findByIdAndUpdate(req.session.userId || req.user._id, { $inc: { followerCount: -1 } });
+//     res.redirect('/followers');
+// });
 
 // 404 Page
-app.use((req, res) => {
-    res.status(404).render('error', {
-        error: 'Page Not Found (404)',
-        statusCode: 404
-    });
-});
+// app.use((req, res) => {
+//     res.status(404).render('error', {
+//         error: 'Page Not Found (404)',
+//         statusCode: 404
+//     });
+// });
 
 // Start Server
 const PORT = process.env.PORT || 3000;
