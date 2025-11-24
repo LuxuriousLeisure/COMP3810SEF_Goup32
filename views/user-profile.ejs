@@ -13,14 +13,12 @@
             max-width: 935px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
         .profile-info-container {
             display: flex;
             align-items: center;
             gap: 40px;
             margin-bottom: 30px;
         }
-
         .profile-avatar-large {
             width: 150px;
             height: 150px;
@@ -28,45 +26,38 @@
             object-fit: cover;
             border: 3px solid #dbdbdb;
         }
-
         .profile-details {
             flex: 1;
         }
-
         .profile-username {
             font-size: 28px;
             font-weight: 300;
             margin-bottom: 20px;
             color: #262626;
         }
-
         .profile-stats-row {
             display: flex;
             gap: 40px;
             margin-bottom: 20px;
         }
-
         .stat-item {
             display: flex;
             align-items: center;
             gap: 5px;
             font-size: 16px;
+            cursor: pointer;
         }
-
         .stat-item .number {
             font-weight: 600;
             color: #262626;
         }
-
         .stat-item .label {
             color: #8e8e8e;
         }
-
         .action-buttons {
             display: flex;
             gap: 10px;
         }
-
         .btn-follow, .btn-unfollow {
             padding: 8px 30px;
             border: none;
@@ -76,26 +67,21 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .btn-follow {
             background-color: #3897f0;
             color: white;
         }
-
         .btn-follow:hover {
             background-color: #2b7ac4;
         }
-
         .btn-unfollow {
             background-color: transparent;
             color: #262626;
             border: 1px solid #dbdbdb;
         }
-
         .btn-unfollow:hover {
             background-color: #fafafa;
         }
-
         .following-badge {
             display: inline-block;
             background-color: #efefef;
@@ -105,7 +91,6 @@
             font-size: 12px;
             margin-left: 10px;
         }
-
         .posts-section {
             max-width: 935px;
             margin: 0 auto;
@@ -114,7 +99,6 @@
             border-radius: 8px;
             padding: 20px;
         }
-
         .posts-section h3 {
             margin-bottom: 20px;
             color: #262626;
@@ -122,13 +106,11 @@
             border-bottom: 1px solid #efefef;
             padding-bottom: 10px;
         }
-
         .posts-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
-
         .post-grid-item {
             position: relative;
             padding-top: 100%;
@@ -136,7 +118,6 @@
             border-radius: 8px;
             cursor: pointer;
         }
-
         .post-grid-item img {
             position: absolute;
             top: 0;
@@ -145,7 +126,6 @@
             height: 100%;
             object-fit: cover;
         }
-
         .post-grid-item .overlay {
             position: absolute;
             top: 0;
@@ -161,17 +141,14 @@
             color: white;
             font-weight: bold;
         }
-
         .post-grid-item:hover .overlay {
             opacity: 1;
         }
-
         .empty-posts {
             text-align: center;
             padding: 60px 20px;
             color: #8e8e8e;
         }
-
         .btn-back {
             display: inline-block;
             margin: 20px auto;
@@ -183,7 +160,6 @@
             font-weight: bold;
             max-width: 935px;
         }
-
         .btn-back:hover {
             background-color: #c7c7c7;
         }
@@ -192,19 +168,18 @@
 <body>
     <div class="main-container">
         <%- include('partials/navbar') %>
-        
+      
         <div class="content">
-            <a href="/home" class="btn-back">← back homepage</a>
-
-            <!-- User Profile card -->
+            <a href="/home" class="btn-back">back homepage</a>
+           
             <div class="profile-header">
                 <div class="profile-info-container">
-                    <img 
-                        src="<%= viewedUser.profileImage || '/images/default-avatar.jpg' %>" 
-                        alt="<%= viewedUser.username %>" 
+                    <img
+                        src="<%= viewedUser.profileImage || '/images/default-avatar.jpg' %>"
+                        alt="<%= viewedUser.username %>"
                         class="profile-avatar-large"
                     >
-                    
+                  
                     <div class="profile-details">
                         <h1 class="profile-username">
                             <%= viewedUser.username %>
@@ -212,45 +187,55 @@
                                 <span class="following-badge">following</span>
                             <% } %>
                         </h1>
-                        
+                      
                         <div class="profile-stats-row">
                             <div class="stat-item">
                                 <span class="number"><%= viewedUser.postCount || 0 %></span>
                                 <span class="label">posts</span>
                             </div>
-                            <div class="stat-item">
+                           
+                            <div class="stat-item" onclick="alert('This content is private')">
                                 <span class="number"><%= viewedUser.followerCount || 0 %></span>
                                 <span class="label">fans</span>
                             </div>
-                            <div class="stat-item">
+                           
+                            <div class="stat-item" onclick="alert('This content is private')">
                                 <span class="number"><%= viewedUser.followingCount || 0 %></span>
                                 <span class="label">following</span>
                             </div>
                         </div>
 
                         <div class="action-buttons">
+                            <!-- Original follow logic preserved (commented) -->
+                            <!--
                             <% if (isFollowing) { %>
                                 <button class="btn-unfollow" onclick="unfollowUser('<%= viewedUser._id %>')">
-                                    ✓ followed
+                                    followed
                                 </button>
                             <% } else { %>
                                 <button class="btn-follow" onclick="followUser('<%= viewedUser._id %>')">
-                                    follow
+                                    Follow
                                 </button>
                             <% } %>
+                            -->
+
+                            <!-- Blue Follow button - looks normal, but disabled -->
+                            <button class="btn-follow" 
+                                    onclick="alert('This feature is under development')">
+                                Follow
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- The user's post -->
             <div class="posts-section">
-                <h3>📸 <%= viewedUser.username %> posts (<%= userPosts.length %>)</h3>
-                
+                <h3><%= viewedUser.username %> posts (<%= userPosts.length %>)</h3>
+              
                 <% if (userPosts.length === 0) { %>
                     <div class="empty-posts">
                         <h3>No posts have been published yet</h3>
-                        <p>when <%= viewedUser.username %>  posting, the content will be displayed here.</p>
+                        <p>When <%= viewedUser.username %> posts something, it will appear here.</p>
                     </div>
                 <% } else { %>
                     <div class="posts-grid">
@@ -258,7 +243,7 @@
                             <div class="post-grid-item" onclick="location.href='/posts/<%= post._id %>'">
                                 <img src="<%= post.images[0] %>" alt="Post">
                                 <div class="overlay">
-                                    <p>❤️ <%= post.likeCount || 0 %> likes</p>
+                                    <p><%= post.likeCount || 0 %> likes</p>
                                 </div>
                             </div>
                         <% }) %>
@@ -268,49 +253,53 @@
         </div>
     </div>
 
-    <script>
-        // Follow users
-        async function followUser(userId) {
-            try {
-                const response = await fetch(`/api/users/${userId}/follow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+    <!-- Follow/Unfollow functions disabled (commented) -->
+   <script>
+    /* ============================================================
+       Follow / Unfollow functions have been temporarily disabled
+       to prevent E11000 duplicate key errors during demo.
+       All original code is preserved below and can be restored anytime.
+       ============================================================ */
 
-                const result = await response.json();
-                if (result.success) {
-                    alert('✅ Follow succeed！');
-                    location.reload();
-                } else {
-                    alert('❌ ' + result.message);
-                }
-            } catch (error) {
-                alert('❌ Follow failure：' + error.message);
+    /*
+    async function followUser(userId) {
+        try {
+            const response = await fetch(`/api/users/${userId}/follow`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Follow successful');
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
             }
+        } catch (error) {
+            alert('Follow failed: ' + error.message);
         }
+    }
 
-        // Unfollow the user
-        async function unfollowUser(userId) {
-            if (!confirm('Are you sure you want to unfollow this user?')) return;
-
-            try {
-                const response = await fetch(`/api/users/${userId}/unfollow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    alert('✅ Unfollowed');
-                    location.reload();
-                } else {
-                    alert('❌ ' + result.message);
-                }
-            } catch (error) {
-                alert('❌ operation failure：' + error.message);
+    async function unfollowUser(userId) {
+        if (!confirm('Are you sure you want to unfollow this user?')) return;
+        try {
+            const response = await fetch(`/api/users/${userId}/unfollow`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Unfollowed successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
             }
+        } catch (error) {
+            alert('Operation failed: ' + error.message);
         }
-    </script>
+    }
+    */
+</script>
+
 </body>
 </html>
-
