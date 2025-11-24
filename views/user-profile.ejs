@@ -1,316 +1,97 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Instagram Clone - <%= viewedUser.username %>'s Profile</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .profile-header {
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 40px;
-            margin: 40px auto;
-            max-width: 935px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+<%- layout('layouts/main') %>
 
-        .profile-info-container {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            margin-bottom: 30px;
-        }
+<div class="container mt-5">
+  <div class="row">
+    <!-- 左侧个人信息 -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <img src="<%= user.avatar || '/images/default-avatar.png' %>"
+               alt="<%= user.username %>"
+               class="rounded-circle mb-3"
+               width="140" height="140">
 
-        .profile-avatar-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #dbdbdb;
-        }
+          <h3><%= user.username %></h3>
+          <p class="text-muted">@<%= user.username %></p>
 
-        .profile-details {
-            flex: 1;
-        }
+          <% if (user.bio) { %>
+            <p class="mt-3"><%= user.bio %></p>
+          <% } %>
 
-        .profile-username {
-            font-size: 28px;
-            font-weight: 300;
-            margin-bottom: 20px;
-            color: #262626;
-        }
+          <div class="d-flex justify-content-center gap-5 my-4">
+            <!-- 粉丝：不可点击 -->
+            <span class="btn btn-outline-secondary disabled text-muted"
+                  style="pointer-events: none;">
+              <strong><%= user.followers ? user.followers.length : 0 %></strong><br>粉丝
+            </span>
 
-        .profile-stats-row {
-            display: flex;
-            gap: 40px;
-            margin-bottom: 20px;
-        }
+            <!-- 关注中：不可点击 -->
+            <span class="btn btn-outline-secondary disabled text-muted"
+                  style="pointer-events: none;">
+              <strong><%= user.following ? user.following.length : 0 %></strong><br>关注中
+            </span>
+          </div>
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 16px;
-        }
-
-        .stat-item .number {
-            font-weight: 600;
-            color: #262626;
-        }
-
-        .stat-item .label {
-            color: #8e8e8e;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-follow, .btn-unfollow {
-            padding: 8px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-follow {
-            background-color: #3897f0;
-            color: white;
-        }
-
-        .btn-follow:hover {
-            background-color: #2b7ac4;
-        }
-
-        .btn-unfollow {
-            background-color: transparent;
-            color: #262626;
-            border: 1px solid #dbdbdb;
-        }
-
-        .btn-unfollow:hover {
-            background-color: #fafafa;
-        }
-
-        .following-badge {
-            display: inline-block;
-            background-color: #efefef;
-            color: #8e8e8e;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .posts-section {
-            max-width: 935px;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-        .posts-section h3 {
-            margin-bottom: 20px;
-            color: #262626;
-            font-size: 18px;
-            border-bottom: 1px solid #efefef;
-            padding-bottom: 10px;
-        }
-
-        .posts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .post-grid-item {
-            position: relative;
-            padding-top: 100%;
-            overflow: hidden;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .post-grid-item img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .post-grid-item .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-weight: bold;
-        }
-
-        .post-grid-item:hover .overlay {
-            opacity: 1;
-        }
-
-        .empty-posts {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8e8e8e;
-        }
-
-        .btn-back {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #dbdbdb;
-            color: #262626;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            max-width: 935px;
-        }
-
-        .btn-back:hover {
-            background-color: #c7c7c7;
-        }
-    </style>
-</head>
-<body>
-    <div class="main-container">
-        <%- include('partials/navbar') %>
-        
-        <div class="content">
-            <a href="/home" class="btn-back">← 返回首頁</a>
-
-            <!-- 用戶資料卡片 -->
-            <div class="profile-header">
-                <div class="profile-info-container">
-                    <img 
-                        src="<%= viewedUser.profileImage || '/images/default-avatar.jpg' %>" 
-                        alt="<%= viewedUser.username %>" 
-                        class="profile-avatar-large"
-                    >
-                    
-                    <div class="profile-details">
-                        <h1 class="profile-username">
-                            <%= viewedUser.username %>
-                            <% if (isFollowing) { %>
-                                <span class="following-badge">正在關注</span>
-                            <% } %>
-                        </h1>
-                        
-                        <div class="profile-stats-row">
-                            <div class="stat-item">
-                                <span class="number"><%= viewedUser.postCount || 0 %></span>
-                                <span class="label">篇帖子</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="number"><%= viewedUser.followerCount || 0 %></span>
-                                <span class="label">粉絲</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="number"><%= viewedUser.followingCount || 0 %></span>
-                                <span class="label">正在關注</span>
-                            </div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <% if (isFollowing) { %>
-                                <button class="btn-unfollow" onclick="unfollowUser('<%= viewedUser._id %>')">
-                                    ✓ 已關注
-                                </button>
-                            <% } else { %>
-                                <button class="btn-follow" onclick="followUser('<%= viewedUser._id %>')">
-                                    關注
-                                </button>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 用戶的帖子 -->
-            <div class="posts-section">
-                <h3>📸 <%= viewedUser.username %> 的帖子 (<%= userPosts.length %>)</h3>
-                
-                <% if (userPosts.length === 0) { %>
-                    <div class="empty-posts">
-                        <h3>還沒有發布任何帖子</h3>
-                        <p>當 <%= viewedUser.username %> 發布帖子時，這裡會顯示內容。</p>
-                    </div>
-                <% } else { %>
-                    <div class="posts-grid">
-                        <% userPosts.forEach(post => { %>
-                            <div class="post-grid-item" onclick="location.href='/posts/<%= post._id %>'">
-                                <img src="<%= post.images[0] %>" alt="Post">
-                                <div class="overlay">
-                                    <p>❤️ <%= post.likeCount || 0 %> 個讚</p>
-                                </div>
-                            </div>
-                        <% }) %>
-                    </div>
-                <% } %>
-            </div>
+          <!-- 关注按钮：完全禁用 -->
+          <% if (currentUser && currentUser._id.toString() !== user._id.toString()) { %>
+            <% const isFollowing = currentUser.following && 
+                                  currentUser.following.some(id => id.toString() === user._id.toString()); %>
+            <% if (isFollowing) { %>
+              <span class="btn btn-secondary w-100" disabled>已关注</span>
+            <% } else { %>
+              <span class="btn btn-outline-primary w-100" disabled>关注</span>
+            <% } %>
+          <% } else { %>
+            <a href="/profile/edit" class="btn btn-outline-primary w-100">编辑资料</a>
+          <% } %>
         </div>
+      </div>
     </div>
 
-    <script>
-        // 關注用戶
-        async function followUser(userId) {
-            try {
-                const response = await fetch(`/api/users/${userId}/follow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+    <!-- 右侧动态 -->
+    <div class="col-md-8">
+      <h4 class="mb-4"><%= user.username %> 的动态</h4>
 
-                const result = await response.json();
-                if (result.success) {
-                    alert('✅ 關注成功！');
-                    location.reload();
-                } else {
-                    alert('❌ ' + result.message);
-                }
-            } catch (error) {
-                alert('❌ 關注失敗：' + error.message);
-            }
-        }
+      <% if (posts && posts.length > 0) { %>
+        <% posts.forEach(post => { %>
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong><%= user.username %></strong>
+                  <small class="text-muted ms-2">
+                    <%= new Date(post.createdAt).toLocaleString('zh-CN') %>
+                  </small>
+                </div>
+              </div>
 
-        // 取消關注用戶
-        async function unfollowUser(userId) {
-            if (!confirm('確定要取消關注這個用戶嗎？')) return;
+              <p class="mt-3"><%= post.content %></p>
 
-            try {
-                const response = await fetch(`/api/users/${userId}/unfollow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+              <% if (post.image) { %>
+                <img src="<%= post.image %>" class="img-fluid rounded mb-3" alt="post image">
+              <% } %>
 
-                const result = await response.json();
-                if (result.success) {
-                    alert('✅ Unfollowed');
-                    location.reload();
-                } else {
-                    alert('❌ ' + result.message);
-                }
-            } catch (error) {
-                alert('❌ operation failure：' + error.message);
-            }
-        }
-    </script>
-</body>
-</html>
+              <div class="d-flex gap-4 text-muted small mt-3">
+                <span>点赞 <%= post.likes ? post.likes.length : 0 %></span>
+                <span>评论 <%= post.comments ? post.comments.length : 0 %></span>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="text-center text-muted mt-5">
+          <p>这个人还没有发过动态～</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
 
+<!-- 强制禁用样式 -->
+<style>
+  .btn.disabled, .btn:disabled, [disabled] {
+    opacity: 0.65;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+  }
+</style>
