@@ -569,3 +569,17 @@ a {
         }
     }
 }
+
+/* 禁用状态的关注按钮样式 */
+.follow-btn.disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed; /* 显示禁止图标 */
+  border: 1px solid #e1e8ed;
+}
+
+/* 移除禁用按钮的悬停效果 */
+.follow-btn.disabled:hover {
+  background-color: #f0f0f0;
+  transform: none;
+}
