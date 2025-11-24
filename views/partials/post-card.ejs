@@ -5,7 +5,7 @@
             <p class="username"><%= post.userId.username %></p>
         <% } else { %>
             <img src="/images/default-avatar.jpg" class="avatar" alt="avatar">
-            <p class="username">已刪除的用戶</p>
+            <p class="username">User removed</p>
         <% } %>
     </div>
     
@@ -26,8 +26,9 @@
     </div>
     
     <div class="post-footer">
-        <span>❤️ <%= post.likeCount || 0 %> 個讚</span>
-        <a href="/posts/<%= post._id %>">查看詳情</a>
+        <span>❤️ <%= post.likeCount || 0 %> likes</span>
+        <a href="/posts/<%= post._id %>">View details</a>
     </div>
 </div>
+
 
