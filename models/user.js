@@ -39,7 +39,7 @@ userSchema.index({ username: 1 });
 userSchema.index({ githubId: 1 });  
 
 userSchema.virtual('formattedDate').get(function() {
-    return this.createdAt ? this.createdAt.toLocaleDateString('zh-TW') : '';
+    return this.createdAt ? this.createdAt.toLocaleDateString('en-US') : '';
 });
 
 module.exports = userSchema;
