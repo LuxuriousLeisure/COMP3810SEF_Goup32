@@ -1,305 +1,63 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Instagram Clone - <%= viewedUser.username %>'s Profile</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .profile-header {
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 40px;
-            margin: 40px auto;
-            max-width: 935px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .profile-info-container {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            margin-bottom: 30px;
-        }
-        .profile-avatar-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #dbdbdb;
-        }
-        .profile-details {
-            flex: 1;
-        }
-        .profile-username {
-            font-size: 28px;
-            font-weight: 300;
-            margin-bottom: 20px;
-            color: #262626;
-        }
-        .profile-stats-row {
-            display: flex;
-            gap: 40px;
-            margin-bottom: 20px;
-        }
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .stat-item .number {
-            font-weight: 600;
-            color: #262626;
-        }
-        .stat-item .label {
-            color: #8e8e8e;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .btn-follow, .btn-unfollow {
-            padding: 8px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-follow {
-            background-color: #3897f0;
-            color: white;
-        }
-        .btn-follow:hover {
-            background-color: #2b7ac4;
-        }
-        .btn-unfollow {
-            background-color: transparent;
-            color: #262626;
-            border: 1px solid #dbdbdb;
-        }
-        .btn-unfollow:hover {
-            background-color: #fafafa;
-        }
-        .following-badge {
-            display: inline-block;
-            background-color: #efefef;
-            color: #8e8e8e;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        .posts-section {
-            max-width: 935px;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid #dbdbdb;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .posts-section h3 {
-            margin-bottom: 20px;
-            color: #262626;
-            font-size: 18px;
-            border-bottom: 1px solid #efefef;
-            padding-bottom: 10px;
-        }
-        .posts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .post-grid-item {
-            position: relative;
-            padding-top: 100%;
-            overflow: hidden;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .post-grid-item img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .post-grid-item .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-weight: bold;
-        }
-        .post-grid-item:hover .overlay {
-            opacity: 1;
-        }
-        .empty-posts {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8e8e8e;
-        }
-        .btn-back {
-            display: inline-block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #dbdbdb;
-            color: #262626;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            max-width: 935px;
-        }
-        .btn-back:hover {
-            background-color: #c7c7c7;
-        }
-    </style>
-</head>
-<body>
-    <div class="main-container">
-        <%- include('partials/navbar') %>
-      
-        <div class="content">
-            <a href="/home" class="btn-back">back homepage</a>
-           
-            <div class="profile-header">
-                <div class="profile-info-container">
-                    <img
-                        src="<%= viewedUser.profileImage || '/images/default-avatar.jpg' %>"
-                        alt="<%= viewedUser.username %>"
-                        class="profile-avatar-large"
-                    >
-                  
-                    <div class="profile-details">
-                        <h1 class="profile-username">
-                            <%= viewedUser.username %>
-                            <% if (isFollowing) { %>
-                                <span class="following-badge">following</span>
-                            <% } %>
-                        </h1>
-                      
-                        <div class="profile-stats-row">
-                            <div class="stat-item">
-                                <span class="number"><%= viewedUser.postCount || 0 %></span>
-                                <span class="label">posts</span>
-                            </div>
-                           
-                            <div class="stat-item" onclick="alert('This content is private')">
-                                <span class="number"><%= viewedUser.followerCount || 0 %></span>
-                                <span class="label">fans</span>
-                            </div>
-                           
-                            <div class="stat-item" onclick="alert('This content is private')">
-                                <span class="number"><%= viewedUser.followingCount || 0 %></span>
-                                <span class="label">following</span>
-                            </div>
-                        </div>
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-                        <div class="action-buttons">
-                            <!-- Original follow logic preserved (commented) -->
-                            <!--
-                            <% if (isFollowing) { %>
-                                <button class="btn-unfollow" onclick="unfollowUser('<%= viewedUser._id %>')">
-                                    followed
-                                </button>
-                            <% } else { %>
-                                <button class="btn-follow" onclick="followUser('<%= viewedUser._id %>')">
-                                    Follow
-                                </button>
-                            <% } %>
-                            -->
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: false   // Allow null for GitHub OAuth users
+  },
+  githubId: {
+    type: String,
+    unique: true,
+    sparse: true      // Important: allows null values safely
+  },
+  profileImage: {
+    type: String,
+    default: '/images/default-avatar.jpg'
+  },
+  postCount: {
+    type: Number,
+    default: 0
+  },
+  followerCount: {    // 
+    type: Number,
+    default: 0
+  },
+  followingCount: {
+    type: Number,
+    default: 0
+  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+}, {
+  timestamps: true
+});
 
-                            <!-- Blue Follow button - looks normal, but disabled -->
-                            <button class="btn-follow" 
-                                    onclick="alert('This feature is under development')">
-                                Follow
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+// Hash password only when it exists and is modified
+userSchema.pre('save', async function (next) {
+  if (this.password && this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
 
-            <div class="posts-section">
-                <h3><%= viewedUser.username %> posts (<%= userPosts.length %>)</h3>
-              
-                <% if (userPosts.length === 0) { %>
-                    <div class="empty-posts">
-                        <h3>No posts have been published yet</h3>
-                        <p>When <%= viewedUser.username %> posts something, it will appear here.</p>
-                    </div>
-                <% } else { %>
-                    <div class="posts-grid">
-                        <% userPosts.forEach(post => { %>
-                            <div class="post-grid-item" onclick="location.href='/posts/<%= post._id %>'">
-                                <img src="<%= post.images[0] %>" alt="Post">
-                                <div class="overlay">
-                                    <p><%= post.likeCount || 0 %> likes</p>
-                                </div>
-                            </div>
-                        <% }) %>
-                    </div>
-                <% } %>
-            </div>
-        </div>
-    </div>
-
-    <!-- Follow/Unfollow functions disabled (commented) -->
-   <script>
-    /* ============================================================
-       Follow / Unfollow functions have been temporarily disabled
-       to prevent E11000 duplicate key errors during demo.
-       All original code is preserved below and can be restored anytime.
-       ============================================================ */
-
-    /*
-    async function followUser(userId) {
-        try {
-            const response = await fetch(`/api/users/${userId}/follow`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('Follow successful');
-                location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        } catch (error) {
-            alert('Follow failed: ' + error.message);
-        }
-    }
-
-    async function unfollowUser(userId) {
-        if (!confirm('Are you sure you want to unfollow this user?')) return;
-        try {
-            const response = await fetch(`/api/users/${userId}/unfollow`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('Unfollowed successfully');
-                location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        } catch (error) {
-            alert('Operation failed: ' + error.message);
-        }
-    }
-    */
-</script>
-
-</body>
-</html>
+module.exports = mongoose.model('User', userSchema);
