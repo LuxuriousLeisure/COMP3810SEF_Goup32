@@ -1,4 +1,4 @@
-/* 全局样式 */
+/* Global Style */
 * {
     margin: 0;
     padding: 0;
@@ -16,13 +16,13 @@ a {
     color: #0095f6;
 }
 
-/* 主容器 */
+/* primary container */
 .main-container {
     display: flex;
     height: 100vh;
 }
 
-/* 左侧导航栏 */
+/* Left navigation bar */
 .navbar {
     width: 250px;
     background-color: #fff;
@@ -86,14 +86,14 @@ a {
     font-size: 14px;
 }
 
-/* 内容区域 */
+/* content area */
 .content {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
 }
 
-/* 登录/注册页面 */
+/* Login/registration page */
 .login-container {
     display: flex;
     justify-content: center;
@@ -186,7 +186,7 @@ a {
     border: 1px solid #f5c6cb;
 }
 
-/* 帖子卡片 */
+/* Post card */
 .post-card {
     background-color: #fff;
     border: 1px solid #e1e8ed;
@@ -261,7 +261,7 @@ a {
     font-weight: 500;
 }
 
-/* 搜索结果网格 */
+/* Search result grid */
 .posts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -314,7 +314,7 @@ a {
     border-radius: 4px;
 }
 
-/* 用户卡片 */
+/* User card */
 .user-card {
     background-color: #fff;
     padding: 15px;
@@ -357,7 +357,7 @@ a {
     font-size: 12px;
 }
 
-/* 评论区 */
+/* comments section */
 .comments-container {
     margin-top: 30px;
     padding-top: 20px;
@@ -419,7 +419,7 @@ a {
     cursor: pointer;
 }
 
-/* 配置文件 */
+/* configuration files */
 .profile-card {
     background-color: #fff;
     padding: 30px;
@@ -444,7 +444,7 @@ a {
     color: #999;
 }
 
-/* 发布页面 */
+
 .publish-container {
     max-width: 600px;
     background-color: #fff;
@@ -477,7 +477,7 @@ a {
     font-size: 14px;
 }
 
-/* 错误页面 */
+/* Error page */
 .error-container {
     display: flex;
     flex-direction: column;
@@ -497,7 +497,7 @@ a {
     margin-bottom: 30px;
 }
 
-/* 分页 */
+/* paging */
 .pagination {
     display: flex;
     justify-content: center;
@@ -545,7 +545,7 @@ a {
     cursor: pointer;
 }
 
-/* 响应式 */
+/* reactive */
 @media (max-width: 768px) {
     .main-container {
         flex-direction: column;
