@@ -194,9 +194,9 @@
         <%- include('partials/navbar') %>
         
         <div class="content">
-            <a href="/home" class="btn-back">← 返回首頁</a>
+            <a href="/home" class="btn-back">← back homepage</a>
 
-            <!-- 用戶資料卡片 -->
+            <!-- User Profile card -->
             <div class="profile-header">
                 <div class="profile-info-container">
                     <img 
@@ -209,33 +209,33 @@
                         <h1 class="profile-username">
                             <%= viewedUser.username %>
                             <% if (isFollowing) { %>
-                                <span class="following-badge">正在關注</span>
+                                <span class="following-badge">following</span>
                             <% } %>
                         </h1>
                         
                         <div class="profile-stats-row">
                             <div class="stat-item">
                                 <span class="number"><%= viewedUser.postCount || 0 %></span>
-                                <span class="label">篇帖子</span>
+                                <span class="label">posts</span>
                             </div>
                             <div class="stat-item">
                                 <span class="number"><%= viewedUser.followerCount || 0 %></span>
-                                <span class="label">粉絲</span>
+                                <span class="label">fans</span>
                             </div>
                             <div class="stat-item">
                                 <span class="number"><%= viewedUser.followingCount || 0 %></span>
-                                <span class="label">正在關注</span>
+                                <span class="label">following</span>
                             </div>
                         </div>
 
                         <div class="action-buttons">
                             <% if (isFollowing) { %>
                                 <button class="btn-unfollow" onclick="unfollowUser('<%= viewedUser._id %>')">
-                                    ✓ 已關注
+                                    ✓ followed
                                 </button>
                             <% } else { %>
                                 <button class="btn-follow" onclick="followUser('<%= viewedUser._id %>')">
-                                    關注
+                                    follow
                                 </button>
                             <% } %>
                         </div>
@@ -243,14 +243,14 @@
                 </div>
             </div>
 
-            <!-- 用戶的帖子 -->
+            <!-- The user's post -->
             <div class="posts-section">
-                <h3>📸 <%= viewedUser.username %> 的帖子 (<%= userPosts.length %>)</h3>
+                <h3>📸 <%= viewedUser.username %> posts (<%= userPosts.length %>)</h3>
                 
                 <% if (userPosts.length === 0) { %>
                     <div class="empty-posts">
-                        <h3>還沒有發布任何帖子</h3>
-                        <p>當 <%= viewedUser.username %> 發布帖子時，這裡會顯示內容。</p>
+                        <h3>No posts have been published yet</h3>
+                        <p>when <%= viewedUser.username %>  posting, the content will be displayed here.</p>
                     </div>
                 <% } else { %>
                     <div class="posts-grid">
@@ -258,7 +258,7 @@
                             <div class="post-grid-item" onclick="location.href='/posts/<%= post._id %>'">
                                 <img src="<%= post.images[0] %>" alt="Post">
                                 <div class="overlay">
-                                    <p>❤️ <%= post.likeCount || 0 %> 個讚</p>
+                                    <p>❤️ <%= post.likeCount || 0 %> likes</p>
                                 </div>
                             </div>
                         <% }) %>
@@ -269,7 +269,7 @@
     </div>
 
     <script>
-        // 關注用戶
+        // Follow users
         async function followUser(userId) {
             try {
                 const response = await fetch(`/api/users/${userId}/follow`, {
@@ -279,19 +279,19 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    alert('✅ 關注成功！');
+                    alert('✅ Follow succeed！');
                     location.reload();
                 } else {
                     alert('❌ ' + result.message);
                 }
             } catch (error) {
-                alert('❌ 關注失敗：' + error.message);
+                alert('❌ Follow failure：' + error.message);
             }
         }
 
-        // 取消關注用戶
+        // Unfollow the user
         async function unfollowUser(userId) {
-            if (!confirm('確定要取消關注這個用戶嗎？')) return;
+            if (!confirm('Are you sure you want to unfollow this user?')) return;
 
             try {
                 const response = await fetch(`/api/users/${userId}/unfollow`, {
@@ -301,13 +301,13 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    alert('✅ 已取消關注');
+                    alert('✅ Unfollowed');
                     location.reload();
                 } else {
                     alert('❌ ' + result.message);
                 }
             } catch (error) {
-                alert('❌ 操作失敗：' + error.message);
+                alert('❌ operation failure：' + error.message);
             }
         }
     </script>
