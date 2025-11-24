@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Clone - Home</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- 左侧导航栏 -->
+        <%- include('partials/navbar') %>
+        
+        <!-- 中心内容 -->
+        <div class="content">
+            <h1>📸 Feed</h1>
+            
+            <% if (message) { %>
+                <div class="alert"><%= message %></div>
+            <% } %>
+            
+            <div class="posts-container">
+                <% if (posts && posts.length > 0) { %>
+                    <% posts.forEach((post) => { %>
+                        <%- include('partials/post-card', { post: post }) %>
+                    <% }); %>
+                <% } else { %>
+                    <p class="no-posts">No posts yet. Start following users!</p>
+                <% } %>
+            </div>
+            
+            <!-- 分页 -->
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="/home?page=<%= parseInt(currentPage) - 1 %>">← Previous</a>
+                    <% } %>
+                    
+                    <span>Page <%= currentPage %> / <%= totalPages %></span>
+                    
+                    <% if (parseInt(currentPage) < totalPages) { %>
+                        <a href="/home?page=<%= parseInt(currentPage) + 1 %>">Next →</a>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
