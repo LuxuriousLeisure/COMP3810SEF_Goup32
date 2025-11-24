@@ -60,7 +60,7 @@ passport.deserializeUser(async (id, done) => {
     } catch (err) { done(err); }
 });
 
-// ===== 替换原来的 FacebookStrategy 为 GitHubStrategy =====
+// ===== GitHubStrategy =====
 passport.use(new GitHubStrategy({
     clientID:"Ov23lizxsl8ccP70QnBZ",
     clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
@@ -71,13 +71,17 @@ async (accessToken, refreshToken, profile, done) => {
         let user = await User.findOne({ githubId: profile.id });
 
         if (!user) {
-            // 生成符合你正则的用户名（只允许字母数字下划线）
+            // Generate a username that conforms to your regular expression (only allowing alphanumeric underscores)
+
+			
             let rawName = (profile.username || profile.displayName || 'github_user').toLowerCase();
             let username = rawName.replace(/[^a-z0-9_]/g, '_');
             while (username.length < 3) username += '_';
             username = username.substring(0, 20);
 
-            // 保证唯一性
+            // Guarantee uniqueness
+
+
             let finalUsername = username;
             let i = 1;
             while (await User.findOne({ username: finalUsername })) {
@@ -89,12 +93,12 @@ async (accessToken, refreshToken, profile, done) => {
                 username: finalUsername,
                 profileImage: profile.photos?.[0]?.value || '/images/default-avatar.jpg'
             });
-            console.log(`GitHub 新用户注册: ${finalUsername}`);
+            console.log(`GitHub New user registration: ${finalUsername}`);
         }
 
         return done(null, user);
     } catch (err) {
-        console.error('GitHub 登录错误:', err);
+        console.error('GitHub login error:', err);
         return done(err);
     }
 }));
@@ -119,80 +123,80 @@ app.get('/auth/github/callback',
         req.session.userId = req.user._id.toString();
         req.session.username = req.user.username;
         req.session.profileImage = req.user.profileImage;
-        console.log(`GitHub 用户登录成功: ${req.user.username}`);
+        console.log(`GitHub The user logged in successfully: ${req.user.username}`);
         res.redirect('/home');
     }
 );
-// ===== 8. 路由：用户登录 POST /api/users/login =====
+// ===== 8.  POST /api/users/login =====
 app.post('/api/users/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // 验证输入
+        // Validation
         if (!username || !password) {
             return res.render('login', {
-                message: '❌ 请输入用户名和密码'
+                message: '❌ Please enter your username and password'
             });
         }
 
-        // 从数据库查询用户
+        // Query users from the database
         const user = await User.findOne({ username });
 
         if (!user) {
             return res.render('login', {
-                message: '❌ 用户名不存在'
+                message: '❌ The user name does not exist'
             });
         }
 
-        // 直接比对密码（无加密）
+        // Direct password comparison (unencrypted)
         if (password !== user.password) {
             return res.render('login', {
                 message: '❌ 密码错误'
             });
         }
 
-        // 保存 session（标记用户已登录）
+        // Save the session (mark the user as logged in)
         req.session.userId = user._id.toString();
         req.session.username = user.username;
         req.session.profileImage = user.profileImage;
 
-        console.log(`✅ 用户登录成功: ${username}`);
+        console.log(`✅ The user logged in successfully: ${username}`);
         return res.redirect('/home');
     } catch (error) {
-        console.error('❌ 登录错误:', error);
+        console.error('❌ login error:', error);
         res.render('login', {
-            message: '❌ 登录失败，请重试'
+            message: '❌ Login failed. Please try again'
         });
     }
 });
 
-// ===== 9. 路由：用户注册 POST /api/users/register =====
+// ===== 9.  POST /api/users/register =====
 app.post('/api/users/register', async (req, res) => {
     try {
         const { username, password, passwordConfirm } = req.body;
 
-        // 验证输入
+        // Input Validation
         if (!username || !password || !passwordConfirm) {
             return res.render('register', {
-                message: '❌ 请填写所有字段'
+                message: '❌ Please fill in all the fields'
             });
         }
 
         if (password !== passwordConfirm) {
             return res.render('register', {
-                message: '❌ 密码不匹配'
+                message: '❌ Password does not match'
             });
         }
 
-        // 检查用户名是否已存在
+        // Check whether the user name already exists
         const userExists = await User.findOne({ username });
         if (userExists) {
             return res.render('register', {
-                message: '❌ 用户名已存在'
+                message: '❌ The username already exists'
             });
         }
 
-        // 创建新用户（密码明文存储）
+        // Create a new user (store the password in plain text)
         const newUser = await User.create({
             username,
             password: password,
@@ -202,49 +206,49 @@ app.post('/api/users/register', async (req, res) => {
             postCount: 0
         });
 
-        console.log(`✅ 用户注册成功: ${username}`);
+        console.log(`✅ The user has registered successfully.: ${username}`);
         return res.render('register', {
-            message: '✅ 注册成功！请返回登录'
+            message: '✅ Registration successful! Please return to log in'
         });
 
     } catch (error) {
-        console.error('❌ 注册错误:', error);
+        console.error('❌ registration error:', error);
         res.render('register', {
-            message: '❌ 注册失败，请重试'
+            message: '❌ Registration failed. Please try again'
         });
     }
 });
 
-// ===== 10. 路由：首页 GET /home =====
-// ===== 10. 路由：首页 GET /home =====
+// ===== 10.  GET /home =====
+
 app.get('/home', isAuthenticated, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        // 获取帖子总数
+        // Get the total number of posts
         const totalPosts = await Post.countDocuments();
         const totalPages = Math.ceil(totalPosts / limit);
 
-        // 获取帖子列表并 populate 用户信息
+        // Obtain the list of posts and populate the user information
         const posts = await Post.find()
             .populate('userId', 'username profileImage')
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
 
-        // ✅ 過濾掉 userId 為 null 的帖子（用戶已被刪除）
+        // ✅ Filter out posts with userId null (the user has been deleted)
         const validPosts = posts.filter(post => post.userId !== null);
 
-        // 获取当前用户信息
+        // Obtain the current user information
         const currentUser = await User.findById(req.session.userId || req.user._id);
         
-        // Null 检查
+        // Null check
         if (!currentUser) {
-            console.log('⚠️ 用户不存在，清除 session');
+            console.log('⚠️ The user does not exist. Clear the session');
             req.session.destroy();
-            return res.redirect('/login?message=請重新登入');
+            return res.redirect('/login?message=Please log in again');
         }
 
         console.log(`📖 用户 ${currentUser.username} 查看首页 - 顯示 ${validPosts.length} 個有效帖子`);
