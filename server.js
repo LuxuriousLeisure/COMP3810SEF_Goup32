@@ -674,6 +674,63 @@ app.use((req, res) => {
     });
 });
 
+// ===== Public RESTful API (No Authentication Required) =====
+
+// Public GET (Read first 5 posts)
+app.get('/api/public/posts', async (req, res) => {
+    try {
+        const posts = await Post.find()
+            .populate('userId', 'username profileImage')
+            .sort({ _id: -1 })   // 按创建时间倒序
+            .limit(5);           // 只取前 5 条
+
+        res.json({ success: true, posts });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch posts' });
+    }
+});
+
+// Public POST (Create a post)
+app.post('/api/public/posts', async (req, res) => {
+    try {
+        const { content } = req.body;
+        if (!content) return res.status(400).json({ success: false, message: 'Content required' });
+
+        const newPost = await Post.create({ content, images: [], tags: [], likeCount: 0 });
+        res.json({ success: true, message: 'Post created', post: newPost });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to create post' });
+    }
+});
+
+// Public PUT (Update a post)
+app.put('/api/public/posts/:id', async (req, res) => {
+    try {
+        const { content } = req.body;
+        const updatedPost = await Post.findByIdAndUpdate(
+            req.params.id,
+            { content },
+            { new: true }
+        );
+        if (!updatedPost) return res.status(404).json({ success: false, message: 'Post not found' });
+        res.json({ success: true, message: 'Post updated', post: updatedPost });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to update post' });
+    }
+});
+
+// Public DELETE (Delete a post)
+app.delete('/api/public/posts/:id', async (req, res) => {
+    try {
+        const deletedPost = await Post.findByIdAndDelete(req.params.id);
+        if (!deletedPost) return res.status(404).json({ success: false, message: 'Post not found' });
+        res.json({ success: true, message: 'Post deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete post' });
+    }
+});
+
+
 // Start Server
 const PORT = process.env.PORT || 3000;
 
