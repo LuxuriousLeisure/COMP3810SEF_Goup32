@@ -665,8 +665,9 @@ app.use((req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`\nServer is running at http://localhost:${PORT}`);
-    console.log(`Open http://localhost:${PORT}/login to start\n`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`On Your Phone: http://YOUR_COMPUTER_LOCAL_IP:${PORT}`);
+    console.log(`Example → http://192.168.x.x:${PORT}`);
 });
