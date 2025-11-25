@@ -693,15 +693,22 @@ app.get('/api/public/posts', async (req, res) => {
 // Public POST (Create a post)
 app.post('/api/public/posts', async (req, res) => {
     try {
-        const { content } = req.body;
+        const { content, images } = req.body;
         if (!content) return res.status(400).json({ success: false, message: 'Content required' });
+        if (!images || !Array.isArray(images) || images.length === 0) {
+            return res.status(400).json({ success: false, message: 'At least one image is required' });
+        }
+        if (images.length > 10) {
+            return res.status(400).json({ success: false, message: 'Maximum 10 images allowed' });
+        }
 
-        const newPost = await Post.create({ content, images: [], tags: [], likeCount: 0 });
+        const newPost = await Post.create({ content, images, tags: [], likeCount: 0 });
         res.json({ success: true, message: 'Post created', post: newPost });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to create post' });
     }
 });
+
 
 // Public PUT (Update a post)
 app.put('/api/public/posts/:id', async (req, res) => {
