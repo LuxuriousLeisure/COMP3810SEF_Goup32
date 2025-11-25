@@ -8,8 +8,11 @@ const GitHubStrategy = require('passport-github2').Strategy;
 const app = express();
 
 // ===== Database Connection =====
-const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
-const dbName = 'COMP3810SEFGroup32';
+// const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+// const dbName = 'COMP3810SEFGroup32';
+
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.DB_NAME;
 
 mongoose.connect(uri, { dbName })
     .then(() => console.log('Connected to MongoDB successfully'))
@@ -57,9 +60,12 @@ passport.deserializeUser(async (id, done) => {
 
 // ===== GitHub OAuth Strategy =====
 passport.use(new GitHubStrategy({
-    clientID: "Ov23lizxsl8ccP70QnBZ",
-    clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
+    // clientID: "Ov23lizxsl8ccP70QnBZ",
+    // clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
     //callbackURL: "http://localhost:3000/auth/github/callback"
+
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
     callbackURL: process.env.GITHUB_CALLBACK_URL
 },
 async (accessToken, refreshToken, profile, done) => {
