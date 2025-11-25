@@ -7,8 +7,8 @@ const GitHubStrategy = require('passport-github2').Strategy;
 
 const app = express();
 
-//const methodOverride = require('method-override');
-//app.use(methodOverride('_method'));
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 
 // ===== Database Connection =====
 // const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
