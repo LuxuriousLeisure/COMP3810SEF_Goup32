@@ -1,6 +1,3 @@
-// server.js - FULLY WORKING FINAL VERSION (600+ lines, your original style preserved)
-// GitHub OAuth fixed | Render ready | Mobile ready | All English logs
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -10,24 +7,12 @@ const GitHubStrategy = require('passport-github2').Strategy;
 
 const app = express();
 
-// ===== SMART CALLBACK URL - NEVER GET "redirect_uri not associated" AGAIN =====
-const getCallbackUrl = () => {
-    if (process.env.RENDER) {
-        // Render automatically provides the correct hostname
-        return `https://${process.env.RENDER_EXTERNAL_HOSTNAME}/auth/github/callback`;
-    }
-    // Use env var first (you can set it in .env or Render)
-    if (process.env.GITHUB_CALLBACK_URL) {
-        return process.env.GITHUB_CALLBACK_URL;
-    }
-    // Default fallback
-    return 'http://localhost:3000/auth/github/callback';
-};
-const GITHUB_CALLBACK_URL = getCallbackUrl();
-
 // ===== Database Connection =====
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/COMP3810SEFGroup32';
-const dbName = process.env.DB_NAME || 'COMP3810SEFGroup32';
+// const uri = 'mongodb+srv://wuyou007991:007991@cluster0.ashcnqc.mongodb.net/?appName=Cluster0';
+// const dbName = 'COMP3810SEFGroup32';
+
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.DB_NAME;
 
 mongoose.connect(uri, { dbName })
     .then(() => console.log('Connected to MongoDB successfully'))
@@ -56,10 +41,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'github-oauth-secret-2025',
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-        maxAge: 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === 'production' || !!process.env.RENDER
-    }
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 
 // Passport setup
@@ -76,11 +58,15 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-// ===== GitHub OAuth Strategy (FIXED) =====
+// ===== GitHub OAuth Strategy =====
 passport.use(new GitHubStrategy({
+    // clientID: "Ov23lizxsl8ccP70QnBZ",
+    // clientSecret: "b2fe86348ef7718c2c3806bc5a53de6f8bac15f6",
+    //callbackURL: "http://localhost:3000/auth/github/callback"
+
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: GITHUB_CALLBACK_URL               // ← This line fixes everything!
+    callbackURL: process.env.GITHUB_CALLBACK_URL
 },
 async (accessToken, refreshToken, profile, done) => {
     try {
@@ -122,10 +108,7 @@ function isAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
-// Health check (required by Render)
-app.get('/health', (req, res) => res.status(200).send('OK'));
-
-// ===== Routes (100% your original code) =====
+// ===== Routes =====
 
 app.get('/', (req, res) => {
     req.isAuthenticated() ? res.redirect('/home') : res.redirect('/login');
@@ -688,12 +671,12 @@ app.use((req, res) => {
     });
 });
 
-// ===== Start Server - Works on PC, Phone, Render =====
+// Start Server
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\nServer running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
     console.log(`Local: http://localhost:${PORT}`);
-    console.log(`GitHub Callback URL: ${GITHUB_CALLBACK_URL}`);
-    console.log(`For mobile: http://YOUR_PC_IP:${PORT} (e.g. http://192.168.1.105:${PORT})\n`);
+    console.log(`On Your Phone: http://YOUR_COMPUTER_LOCAL_IP:${PORT}`);
+    console.log(`Example → http://192.168.x.x:${PORT}`);
 });
