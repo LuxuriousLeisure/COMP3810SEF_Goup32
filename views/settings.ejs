@@ -139,7 +139,7 @@
                         <img src="<%= user.profileImage || '/images/default-avatar.jpg' %>" 
                              class="current-avatar" 
                              alt="Current avatar">
-                        <form action="/settings/update-avatar" method="POST">
+                        <form action="/settings/update-avatar?_method=PUT" method="POST">
                             <div class="form-group">
                                 <label for="avatarUrl">New Avatar URL:</label>
                                 <input
