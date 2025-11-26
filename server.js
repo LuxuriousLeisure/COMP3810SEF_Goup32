@@ -666,14 +666,6 @@ app.post('/followers/:id/remove', isAuthenticated, async (req, res) => {
     res.redirect('/followers');
 });
 
-// 404 Page
-app.use((req, res) => {
-    res.status(404).render('error', {
-        error: 'Page Not Found (404)',
-        statusCode: 404
-    });
-});
-
 // ===== Public RESTful API (No Authentication Required) =====
 
 // Public GET (Read first 5 posts)
@@ -735,6 +727,14 @@ app.delete('/api/public/posts/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to delete post' });
     }
+});
+
+// 404 Page
+app.use((req, res) => {
+    res.status(404).render('error', {
+        error: 'Page Not Found (404)',
+        statusCode: 404
+    });
 });
 
 
