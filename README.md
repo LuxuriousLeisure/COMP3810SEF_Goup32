@@ -2,8 +2,7 @@
 
 ## 👥 Project Information
 Project Name: Instagram Clone  
-Group info:  
-  Group No. 32  
+Group info:  Group No. 32  
   1) WU You - 13416252
   2) DENG Qi - 13405410
 
