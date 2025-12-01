@@ -54,7 +54,7 @@ Group info:  Group No. 32
 - `Public`: Static assets folder  
   - [css/style.css](/public/css/style.css): Custom styles for application pages, including layout, typography, and responsive design.  
 
-- `Views`: EJS template files for page rendering  
+- `views`: EJS template files for page rendering  
   - [login.ejs](/views/login.ejs): Login page with GitHub OAuth and local login options.  
   - [register.ejs](/views/register.ejs): User registration page for local account creation.  
   - [home.ejs](/views/home.ejs): Main feed page displaying posts from all users.  
