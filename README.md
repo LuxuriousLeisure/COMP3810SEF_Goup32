@@ -36,7 +36,7 @@ Group info:  Group No. 32
 
   Search Operations
   - Search by username: Find users by username matching. 
-  - Search by tag name: Search posts by particular tag (i.e. #food, #travel, #fashion, #nature, #photography, #art, #fitness, #sunset, #beach, #summer, #style)
+  - Search by tag name: Search posts by particular tag (i.e. #food, #travel, #fashion, #nature, #photography, #art, #fitness, #sunset, #beach, #summer, #style, etc)
 
 
 - `package.json`: List of Dependencies  
