@@ -4,7 +4,8 @@
 Project Name: Instagram Clone  
 Group info:  
   Group No. 32  
-  1) WU You - 13416252  
+  1) WU You - 13416252
+  2) DENG Qi - 13405410
 
 ## 🗳️ Project File Introduction
 - `server.js`: Core server file with key functionalities  
