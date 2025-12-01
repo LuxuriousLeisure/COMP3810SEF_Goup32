@@ -96,11 +96,11 @@ Group info:  Group No. 32
   - **Local Account Login**: Enter your registered username and password, then click "Login" to access the homepage.
   - For evaluation, the following pre-existing accounts are available:
   ```json
-  {username: "user_bfm65caq", password: "ap7dVfR"},
-  {username: "user_dhoq", password: "YBn9vX5oea"},
-  {username: "user_dq051005", password: "L1pmuZVwl"},
-  {username: "user_5o5328wf", password: "uAoMREpDV"},
-  {username: "user_7pb2341", password: "7IXn7Bw"}
+  {"username": "user_bfm65caq", "password": "ap7dVfR"},
+  {"username": "user_dhoq", "password": "YBn9vX5oea"},
+  {"username": "user_dq051005", "password": "L1pmuZVwl"},
+  {"username": "user_5o5328wf", "password": "uAoMREpDV"},
+  {"username": "user_7pb2341", "password": "7IXn7Bw"}
   ```
 
 ### 2. Logout  
