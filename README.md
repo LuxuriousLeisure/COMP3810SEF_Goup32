@@ -10,7 +10,7 @@ Group info:  Group No. 32
 - `server.js`: Core server file with key functionalities
   
   User Authentication 
-  - Login System: Supports GitHub OAuth login and local username/password login.  
+  - Login System: Supports GitHub OAuth login and simple username/password login.  
   - Session Management: Utilises `express-session` to maintain user sessions, enabling persistent login.  
 
   Data Handling 
