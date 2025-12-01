@@ -163,7 +163,7 @@ These endpoints are provided for testing and demonstration purposes.
 The following sections provide example commands for testing each CRUD operation:
 
 ### 1. Read (Get top 5 posts)  
-<br/>HTTP Request Type: GET  
+HTTP Request Type: GET  
 <br/>Path URI: `/api/public/posts`  
 <br/>Example Testing Command:  
 ```bash
@@ -176,7 +176,7 @@ curl -X GET https://comp3810sef-goup32.onrender.com/api/public/posts
 ```
 
 ### 2. Create (Add a new post)  
-<br/>HTTP Request Type: POST  
+HTTP Request Type: POST  
 <br/>Path URI: `/api/public/posts`  
 <br/>Example Testing Command:  
 ```bash
@@ -191,7 +191,7 @@ curl -X POST https://comp3810sef-goup32.onrender.com/api/public/posts \
 ```
 
 ### 3. Update (Modify post content)  
-<br/>HTTP Request Type: PUT  
+HTTP Request Type: PUT  
 <br/>Path URI: `/api/public/posts/<post_id>` (replace `<post_id>` with the target post ID)  
 <br/>Example Testing Command:  
 ```bash
@@ -206,7 +206,7 @@ curl -X PUT https://comp3810sef-goup32.onrender.com/api/public/posts/<post_id> \
 ```
 
 ### 4. Delete (Remove a post)  
-<br/>HTTP Request Type: DELETE  
+HTTP Request Type: DELETE  
 <br/>Path URI: `/api/public/posts/<post_id>` (replace `<post_id>` with the target post ID)  
 <br/>Example Testing Command:  
 ```bash
@@ -217,5 +217,6 @@ curl -X DELETE https://comp3810sef-goup32.onrender.com/api/public/posts/<post_id
 ```json
 {"success":true,"message":"Post deleted"}
 ```
+
 
 
