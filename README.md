@@ -65,7 +65,7 @@ Group info:  Group No. 32
   - [user.js](/models/user.js): User schema with fields for `username`, `githubId`, `profileImage`, and post-related counters.  
   - [post.js](/models/post.js): Post schema including `userId` (author reference), `content`, `images`, `tags`, and `likeCount`.
   - [comment.js](models/comment.js): Use `postId`, `userId`, `content`.
-  - [fllows.js](models/follow.js): Use relation pairs: `follower` - `followee`.
+  - [follows.js](models/follow.js): Use relation pairs: `follower` - `followee`.
     
 
 ## ☁️ Cloud URL
