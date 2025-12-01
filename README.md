@@ -17,9 +17,17 @@ Group info:
   - Route Management: Handles routes for authentication (login/register), home feed, post publishing, profile access, and API endpoints.  
   - Middleware Configuration: Sets up EJS view engine, static file service, request parsing, and authentication checks.  
 
-  Post & User Management 
-  - Post Operations: Creates posts with content, images, and tags; tracks post likes and author information; Users can post comments on post; Like the post. 
-  - User Operations: Users can update their avatar, username, and password; Users can access other users' personal homepagesManages user registration, profile data storage, and session validation.  
+  Post Management Operations 
+  -  Create Post: The system allows authenticated users to create new posts with images, content, and tags.
+  -  View Post Details: Users can view individual posts with all their details including comments.
+  -  Like Post: Authenticated users can like posts, which increments the post's like count.
+  -  Delete Post: Post owners can delete their own posts, which also removes all associated comments and decrements the user's post count.
+  -  Add Comments: Users can add comments to posts, with validation to ensure comments are not empty.
+
+  User Management Operations
+  - User Profile: The profile route displays the current user's information and their posts.
+  - View Other Users' Profiles: Users can view other users' profiles.
+  - User Settings: Users can update their avatar, username, and password through dedicated settings routes.
 
 - `package.json`: List of Dependencies  
   - [express](https://www.npmjs.com/package/express): Fast, unopinionated web framework for Node.js.  
