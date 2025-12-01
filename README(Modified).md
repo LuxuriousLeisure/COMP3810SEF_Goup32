@@ -7,18 +7,18 @@ Group info:  Group No. 32
   2) DENG Qi - 13405410
 
 ## 🗳️ Project File Introduction
-- `server.js`: Core server file with key functionalities
+- `server.js`: Core server file with key features
   
-  User Authentication 
+  1. User Authentication 
   - Login System: Supports dual authentication methods - GitHub OAuth login and simple username/password login.  
   - Session Management: Utilizes `express-session` to maintain persistent user sessions across requests.  
 
-  Data Handling 
+  2. Data Handling 
   - Database Connection: Establishes link to MongoDB via Mongoose for data storage.  
   - Route Management: Handles routes for authentication (login/register), home feed, post publishing, profile access, and API endpoints.  
   - Middleware Configuration: Sets up EJS view engine, static file service, request parsing, and authentication checks.  
 
-  Post Management Operations 
+  3. Post Management Operations 
   -  Create Post: The system allows authenticated users to publish new posts with images, content, and tags.
   -  View Single Post Details: Users can view individual posts pages displaying complete information including author, images, content, tags, like count, and associated comments.
   -  View All Posts by a User: Displays all posts created by a specific user.
@@ -26,13 +26,13 @@ Group info:  Group No. 32
   -  Delete Post: Post owners can delete their own posts, which also removes all associated comments and decrements the user's post count.
   -  Add Comments: Users can add comments to posts, with validation to ensure comments are not empty.
 
-  User Management Operations
+  4. User Management Operations
   - User Registration: Allows new users to create accounts by providing usernames and passwords. 
   - User Profile: The profile displays the current user's avatar, username, registration date, statistics (post count, follower count, following count), and grid layout of user's posts. 
   - View Other Users' Profiles: Users can view other users' profiles with similar information display.
   - User Settings: Users can update their avatar, username, and password through dedicated settings routes.
 
-  Search Operations
+  5. Search Operations
   - Search by username: Find users by username matching. 
   - Search by tag name: Search posts by particular tag (i.e. #food, #travel, #fashion, #nature, #photography, #art, #fitness, #love, #instagood, #photooftheday, #beautiful, #happy, #cute, #like4like, #followme, #picoftheday, #sunset, #beach, #summer, #style)
 
@@ -91,12 +91,13 @@ Group info:  Group No. 32
 
 - **Login**:  
   - **GitHub OAuth Login**: Click the "Continue with GitHub" button on the login page, authorize the application, and be automatically redirected to the homepage.  
-  - **Local Account Login**: Enter your registered username and password, then click "Login" to access the homepage. For evaluation, the following pre-existing accounts are available:
-    {username: "user_bfm65caq", password: "ap7dVfR"}
-    {username: "user_dhoq", password: "YBn9vX5oea"}
-    {username: "user_dq051005", password: "L1pmuZVwl"}
-    {username: "user_5o5328wf", password: "uAoMREpDV"}
-    {username: "user_7pb2341", password: "7IXn7Bw"}
+  - **Local Account Login**: Enter your registered username and password, then click "Login" to access the homepage.
+      For evaluation, the following pre-existing accounts are available:
+      {username: "user_bfm65caq", password: "ap7dVfR"}
+      {username: "user_dhoq", password: "YBn9vX5oea"}
+      {username: "user_dq051005", password: "L1pmuZVwl"}
+      {username: "user_5o5328wf", password: "uAoMREpDV"}
+      {username: "user_7pb2341", password: "7IXn7Bw"}
 
 ### 2. Logout  
 - **Where**: Click the "Logout" button at the bottom of the left navigation bar.  
@@ -216,3 +217,4 @@ curl -X DELETE https://comp3810sef-goup32.onrender.com/api/public/posts/<post_id
 ```json
 {"success":true,"message":"Post deleted"}
 ```
+
