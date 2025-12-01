@@ -7,7 +7,8 @@ Group info:  Group No. 32
   2) DENG Qi - 13405410
 
 ## 🗳️ Project File Introduction
-- `server.js`: Core server file with key functionalities  
+- `server.js`: Core server file with key functionalities
+  
   User Authentication 
   - Login System: Supports GitHub OAuth login and local username/password login.  
   - Session Management: Utilises `express-session` to maintain user sessions, enabling persistent login.  
