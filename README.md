@@ -77,8 +77,19 @@ Group info:  Group No. 32
   - [follows.js](models/follow.js): Use relation pairs: `follower` - `followee`.
     
 
-## ☁️ Cloud URL
-- [Deployed Application](https://comp3810sef-goup32.onrender.com/)  https://comp3810sef-goup32.onrender.com
+## How to Start
+###  ☁️ Cloud
+- The application is deployed and available at: https://comp3810sef-goup32.onrender.com/
+- Note: The Cloud deployment runs the main branch code.
+### 💻 Local Development
+To run the application locally:
+1. **Switch to the `localhost` branch**
+2. **Install dependencies:**
+   ```bash
+   npm install
+3. **Start the development server:**
+   ```bash
+   npm start
 
 ## ⚙️ Operation Guides
 ### 1. Login/Register  
