@@ -1,5 +1,5 @@
 # COMP3810SEF_Goup32
-
+Github repository: https://github.com/LuxuriousLeisure/COMP3810SEF_Goup32
 ## 👥 Project Information
 Project Name: Instagram Clone  
 Group info:  Group No. 32  
@@ -83,7 +83,7 @@ Group info:  Group No. 32
 - Note: The Cloud deployment runs the main branch code.
 ### 💻 Local Development
 To run the application locally:
-1. **Switch to the `localhost` branch**
+1. **Open the link https://github.com/LuxuriousLeisure/COMP3810SEF_Goup32 and switch to the `localhost` branch to copy all the files**
 2. **Install dependencies:**
    ```bash
    npm install
